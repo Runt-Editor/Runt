@@ -1,0 +1,96 @@
+﻿<UserControl x:Class="Runt.Views.ShellView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:cali="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro.Platform"
+             mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="900" Background="#3e3e42">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/Resources/Icons.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+            <SolidColorBrush x:Key="BlackBrush" Color="White" />
+        </ResourceDictionary>
+    </UserControl.Resources>
+    
+    <Grid Width="Auto" Height="Auto" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        
+        <!-- Menu -->
+        <Menu IsMainMenu="True" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+            <MenuItem Header="_File">
+                <MenuItem Header="_Open Project" x:Name="Open" Background="#3e3e42">
+                    <MenuItem.Icon>
+                        <Image Source="../Resources/Icons/Open_6529.png" />
+                    </MenuItem.Icon>
+                </MenuItem>
+
+                <Separator />
+
+                <MenuItem Header="_Save">
+                    <MenuItem.Icon>
+                        <Image Source="../Resources/Icons/Save_6530.png" />
+                    </MenuItem.Icon>
+                </MenuItem>
+
+                <MenuItem Header="Save _All">
+                    <MenuItem.Icon>
+                        <Image Source="../Resources/Icons/Saveall_6518.png" />
+                    </MenuItem.Icon>
+                </MenuItem>
+
+                <Separator />
+
+                <MenuItem Header="E_xit">
+                    <MenuItem.Icon>
+                        <Image Source="../Resources/Icons/Close_16xLG.png" />
+                    </MenuItem.Icon>
+                </MenuItem>
+            </MenuItem>
+        </Menu>
+        
+        <!-- Status Bar -->
+        <ContentControl x:Name="StatusBar" Grid.Row="2" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
+                        Margin="0,0,0,0" MinHeight="25" />
+
+        <!-- Main Content -->
+        <Grid Height="Auto" Width="Auto" Grid.Row="1" Margin="5">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="300" />
+                <ColumnDefinition Width="Auto" MinWidth="10" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <Grid Width="Auto" Grid.Column="0" Margin="0,0,0,5">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <TextBlock Text="{Binding Project.Name}" Grid.Row="0" Padding="12,2,12,2" Margin="0,0,0,2"
+                                       Background="#1585b5" />
+                <Border Background="#252526" Grid.Row="1">
+                    <TreeView ItemsSource="{Binding Project}">
+                        <TreeView.ItemContainerStyle>
+                            <Style TargetType="{x:Type TreeViewItem}">
+                                <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
+                                <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}" />
+                            </Style>
+                        </TreeView.ItemContainerStyle>
+                        <TreeView.ItemTemplate>
+                            <HierarchicalDataTemplate ItemsSource="{Binding}">
+                                <ContentControl cali:View.Model="{Binding}" />
+                            </HierarchicalDataTemplate>
+                        </TreeView.ItemTemplate>
+                    </TreeView>
+                </Border>
+            </Grid>
+        </Grid>
+    </Grid>
+</UserControl>
