@@ -53,6 +53,14 @@ namespace Runt.DesignTimeHost
                 c(this, e);
         }
 
+        public event EventHandler<ReferencesEventArgs> References;
+        private void OnReferences(ReferencesEventArgs e)
+        {
+            var r = References;
+            if (r != null)
+                r(this, e);
+        }
+
         private void Start()
         {
             var port = FreeTcpPort();
@@ -154,7 +162,14 @@ namespace Runt.DesignTimeHost
                     OnConfigurations(new ConfigurationsEventArgs(obj.ContextId, configurations));
                     break;
 
+                case "References":
+                    var references = obj.Payload.ToObject<Incomming.ReferencesMessage>();
+                    OnReferences(new ReferencesEventArgs(obj.ContextId, references));
+                    break;
+
                 default:
+                    if (Debugger.IsAttached)
+                        Debugger.Break();
                     break;
             }
         }

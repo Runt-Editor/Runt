@@ -31,6 +31,11 @@ namespace Runt.ViewModels
             _name = e.ProjectName;
         }
 
+        internal void ApplyReferences(ReferencesEventArgs e)
+        {
+            
+        }
+
         public override ProjectViewModel Project
         {
             get { return this; }

@@ -27,6 +27,7 @@ namespace Runt
             _host = new Host(path);
             _host.Connected += HostConnected;
             _host.Configurations += HostConfigurations;
+            _host.References += HostReferences;
             _host.Start(runtime);
 
             _watcher = new FileSystemWatcher(path);
@@ -35,6 +36,12 @@ namespace Runt
             _watcher.Changed += FileChanged;
 
             _workspace = new CustomWorkspace();
+        }
+
+        private void HostReferences(object sender, ReferencesEventArgs e)
+        {
+            var project = _contexts[e.ContextId];
+            project.ApplyReferences(e);
         }
 
         private void HostConfigurations(object sender, ConfigurationsEventArgs e)

@@ -47,6 +47,7 @@
   <ItemGroup>
     <Compile Include="EventArgs\ConfigurationsEventArgs.cs" />
     <Compile Include="EventArgs\ProjectEventArgs.cs" />
+    <Compile Include="EventArgs\ReferencesEventArgs.cs" />
     <Compile Include="Host.cs" />
     <Compile Include="Incomming\CompilationSettings.cs" />
     <Compile Include="Incomming\ConfigurationData.cs" />
