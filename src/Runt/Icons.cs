@@ -12,7 +12,8 @@ namespace Runt
     {
         private static ImageSource GetImage(string name)
         {
-            var decoder = BitmapDecoder.Create(new Uri("pack://application:,,,/Resources/Icons/" + name), BitmapCreateOptions.DelayCreation, BitmapCacheOption.OnDemand);
+            var decoder = BitmapDecoder.Create(new Uri("pack://application:,,,/Resources/Icons/" + name),
+                BitmapCreateOptions.DelayCreation | BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.OnDemand);
 
             //var triples = decoder.Frames
             //    .GroupBy(f => new Tuple<int, int>(f.PixelWidth, f.PixelHeight))

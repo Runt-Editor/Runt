@@ -9,14 +9,13 @@
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="/Resources/Icons.xaml" />
             </ResourceDictionary.MergedDictionaries>
-            <SolidColorBrush x:Key="BlackBrush" Color="White" />
         </ResourceDictionary>
     </UserControl.Resources>
     
     <Grid Width="Auto" Height="Auto" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
@@ -53,14 +52,26 @@
                     </MenuItem.Icon>
                 </MenuItem>
             </MenuItem>
+            
+            <MenuItem Header="Kvm">
+                <MenuItem Header="Manage _Aliases" x:Name="ManageKvmAlias"></MenuItem>
+                <MenuItem Header="Manage _Runtimes" x:Name="ManageKvmRuntimes"></MenuItem>
+            </MenuItem>
         </Menu>
         
+        <!-- Tool Bar -->
+        <ToolBarTray Grid.Row="1">
+            <ToolBar>
+                <ComboBox ItemsSource="{Binding Runtimes, Mode=OneTime}" SelectedItem="{Binding SelectedRuntime}" />
+            </ToolBar>
+        </ToolBarTray>
+        
         <!-- Status Bar -->
-        <ContentControl x:Name="StatusBar" Grid.Row="2" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
+        <ContentControl x:Name="StatusBar" Grid.Row="3" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
                         Margin="0,0,0,0" MinHeight="25" />
 
         <!-- Main Content -->
-        <Grid Height="Auto" Width="Auto" Grid.Row="1" Margin="5">
+        <Grid Height="Auto" Width="Auto" Grid.Row="2" Margin="5">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="300" />
                 <ColumnDefinition Width="Auto" MinWidth="10" />

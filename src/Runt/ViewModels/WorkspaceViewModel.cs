@@ -10,24 +10,37 @@ using System.Text;
 using System.Threading.Tasks;
 using Caliburn.Micro;
 using Microsoft.CodeAnalysis;
+using Runt.DesignTimeHost;
 using Runt.ViewModels;
 
 namespace Runt
 {
     public class WorkspaceViewModel : FolderViewModel, IDisposable
     {
+        readonly ShellViewModel _shell;
         readonly FileSystemWatcher _watcher;
         readonly CustomWorkspace _workspace;
+        readonly Host _host;
 
-        public WorkspaceViewModel(string path)
+        public WorkspaceViewModel(ShellViewModel shell, string path)
             : base(null, path)
         {
+            var runtime = Kvm.GetRuntime(shell.SelectedRuntime);
+            _host = new Host(path);
+            _host.Connected += HostConnected;
+            _host.Start(runtime);
+
             _watcher = new FileSystemWatcher(path);
             _watcher.NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.FileName | NotifyFilters.Size | NotifyFilters.DirectoryName | NotifyFilters.LastAccess;
             _watcher.Filter = "*.*";
             _watcher.Changed += FileChanged;
 
             _workspace = new CustomWorkspace();
+        }
+
+        private void HostConnected(object sender, EventArgs e)
+        {
+            
         }
 
         internal ProjectId Add(string name)
@@ -63,14 +76,14 @@ namespace Runt
             _watcher.Dispose();
         }
 
-        public static WorkspaceViewModel Load(string path)
+        public static WorkspaceViewModel Load(ShellViewModel shell, string path)
         {
             Contract.Requires(path != null);
 
             if (!Directory.Exists(path))
                 throw new ArgumentException("Directory does not exist");
 
-            return new WorkspaceViewModel(path);
+            return new WorkspaceViewModel(shell, path);
         }
     }
 }

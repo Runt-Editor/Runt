@@ -143,12 +143,20 @@
     <Compile Include="ViewModels\FileViewModel.cs" />
     <Compile Include="ViewModels\FolderViewModel.cs" />
     <Compile Include="ViewModels\IEditorScreenViewModel.cs" />
+    <Compile Include="ViewModels\Kvm\AliasManagerViewModel.cs" />
+    <Compile Include="ViewModels\Kvm\RuntimeManagerViewModel.cs" />
     <Compile Include="ViewModels\PackagesViewModel.cs" />
     <Compile Include="ViewModels\ProjectViewModel.cs" />
     <Compile Include="ViewModels\ShellViewModel.cs" />
     <Compile Include="ViewModels\WorkspaceViewModel.cs" />
     <Compile Include="Views\FileTreeView.xaml.cs">
       <DependentUpon>FileTreeView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Kvm\AliasManagerView.xaml.cs">
+      <DependentUpon>AliasManagerView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Kvm\RuntimeManagerView.xaml.cs">
+      <DependentUpon>RuntimeManagerView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\ShellView.xaml.cs">
       <DependentUpon>ShellView.xaml</DependentUpon>
@@ -162,6 +170,14 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Views\FileTreeView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Kvm\AliasManagerView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Kvm\RuntimeManagerView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -234,6 +250,16 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\Icons\CSharpFile_SolutionExplorerNode.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Runt.DesignTimeHost\Runt.DesignTimeHost.csproj">
+      <Project>{df40e7d2-ee4a-47b8-ad1f-5ce5b20ee5d8}</Project>
+      <Name>Runt.DesignTimeHost</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Runt.Kvm\Runt.Kvm.csproj">
+      <Project>{c44cae2c-8f7f-4e2b-8868-9f0b4219752b}</Project>
+      <Name>Runt.Kvm</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

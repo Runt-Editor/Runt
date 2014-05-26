@@ -1,0 +1,24 @@
+﻿<UserControl x:Class="Runt.Views.Kvm.RuntimeManagerView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="400" d:DesignWidth="700">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <DataGrid AutoGenerateColumns="False" ItemsSource="{Binding Runtimes}">
+            <DataGrid.Columns>
+                <DataGridCheckBoxColumn Header="Active" Binding="{Binding Active, Mode=OneTime}" Width="45" IsReadOnly="True" />
+                <DataGridTextColumn Header="Version" Binding="{Binding Version, Mode=OneTime}" Width="150" IsReadOnly="True" />
+                <DataGridTextColumn Header="Runtime" Binding="{Binding Runtime, Mode=OneTime}" Width="60" IsReadOnly="True" />
+                <DataGridTextColumn Header="Architecture" Binding="{Binding Architecture, Mode=OneTime}" Width="80" IsReadOnly="True" />
+                <DataGridTextColumn Header="Location" Binding="{Binding Location, Mode=OneTime}" Width="*" IsReadOnly="True" />
+            </DataGrid.Columns>
+        </DataGrid>
+    </Grid>
+</UserControl>
