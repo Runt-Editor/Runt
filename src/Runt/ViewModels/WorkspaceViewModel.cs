@@ -1,14 +1,9 @@
 ﻿using System;
-using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.ComponentModel;
 using System.Diagnostics.Contracts;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Caliburn.Micro;
+using System.Threading;
 using Microsoft.CodeAnalysis;
 using Runt.DesignTimeHost;
 using Runt.ViewModels;
@@ -21,6 +16,9 @@ namespace Runt
         readonly FileSystemWatcher _watcher;
         readonly CustomWorkspace _workspace;
         readonly Host _host;
+        readonly ConcurrentDictionary<int, ProjectViewModel> _contexts = new ConcurrentDictionary<int, ProjectViewModel>();
+
+        int _projectsIds;
 
         public WorkspaceViewModel(ShellViewModel shell, string path)
             : base(null, path)
@@ -28,6 +26,7 @@ namespace Runt
             var runtime = Kvm.GetRuntime(shell.SelectedRuntime);
             _host = new Host(path);
             _host.Connected += HostConnected;
+            _host.Configurations += HostConfigurations;
             _host.Start(runtime);
 
             _watcher = new FileSystemWatcher(path);
@@ -38,22 +37,31 @@ namespace Runt
             _workspace = new CustomWorkspace();
         }
 
+        private void HostConfigurations(object sender, ConfigurationsEventArgs e)
+        {
+            var project = _contexts[e.ContextId];
+            project.ApplyConfigurations(e);
+        }
+
         private void HostConnected(object sender, EventArgs e)
         {
-            
+            foreach (var proj in _contexts.Values)
+                _host.InitProject(proj.Id, proj.Path);
         }
 
-        internal ProjectId Add(string name)
+        internal Tuple<int, Project> Add(ProjectViewModel project)
         {
-            return _workspace.AddProject(name, "C#");
-        }
+            var pid = _workspace.AddProject(project.Name, "C#");
+            var proj = _workspace.CurrentSolution.GetProject(pid);
+            int id = Interlocked.Increment(ref _projectsIds);
 
-        internal Project this[ProjectId projectId]
-        {
-            get
-            {
-                return _workspace.CurrentSolution.GetProject(projectId);
-            }
+            if (!_contexts.TryAdd(id, project))
+                throw new Exception("Id already taken");
+
+            if (_host.IsConnected)
+                _host.InitProject(id, project.Path);
+
+            return new Tuple<int, Project>(id, proj);
         }
 
         public override WorkspaceViewModel Workspace
@@ -83,7 +91,9 @@ namespace Runt
             if (!Directory.Exists(path))
                 throw new ArgumentException("Directory does not exist");
 
-            return new WorkspaceViewModel(shell, path);
+            var workspace = new WorkspaceViewModel(shell, path);
+            workspace.Initialize();
+            return workspace;
         }
     }
 }

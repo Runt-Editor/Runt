@@ -13,12 +13,9 @@ namespace Runt.ViewModels
     [ProxyModel(typeof(FileTreeViewModel))]
     public class CSharpFileViewModel : FileViewModel
     {
-        protected readonly DocumentId _id;
-
         public CSharpFileViewModel(FolderViewModel parent, FileInfo file)
             : base(parent, file)
         {
-            _id = Project.Add(this);
         }
 
         internal SourceText ReadContent()

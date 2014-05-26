@@ -6,18 +6,29 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Media;
 using Microsoft.CodeAnalysis;
+using Runt.DesignTimeHost;
 
 namespace Runt.ViewModels
 {
     [ProxyModel(typeof(FileTreeViewModel))]
     public class ProjectViewModel : FolderViewModel
     {
-        readonly ProjectId _id;
+        readonly int _id;
+        readonly Project _project;
+
+        string _name;
 
         public ProjectViewModel(FolderViewModel parent, DirectoryInfo dir)
             : base(parent, dir)
         {
-            _id = Workspace.Add(Name);
+            var tuple = Workspace.Add(this);
+            _id = tuple.Item1;
+            _project = tuple.Item2;
+        }
+
+        internal void ApplyConfigurations(ConfigurationsEventArgs e)
+        {
+            _name = e.ProjectName;
         }
 
         public override ProjectViewModel Project
@@ -25,15 +36,14 @@ namespace Runt.ViewModels
             get { return this; }
         }
 
-        public ProjectId Id
+        public int Id
         {
             get { return _id; }
         }
 
-        internal DocumentId Add(CSharpFileViewModel fileViewModel)
+        public override string Name
         {
-            var doc = Workspace[_id].AddDocument(fileViewModel.Name, fileViewModel.ReadContent());
-            return doc.Id;
+            get { return _name ?? base.Name; }
         }
 
         public override ImageSource Icon

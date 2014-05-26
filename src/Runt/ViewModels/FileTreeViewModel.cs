@@ -30,6 +30,7 @@ namespace Runt.ViewModels
 
         protected abstract bool HasItems { get; }
         protected abstract IEnumerable GetItems();
+        protected abstract void Initialize();
 
         public abstract string Name { get; }
         public abstract ImageSource Icon { get; }

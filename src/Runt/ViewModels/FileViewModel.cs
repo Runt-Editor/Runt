@@ -2,8 +2,6 @@
 using System.Collections;
 using System.IO;
 using System.Windows.Media;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Text;
 
 namespace Runt.ViewModels
 {
@@ -22,6 +20,11 @@ namespace Runt.ViewModels
         {
             _parent = parent;
             _file = file;
+        }
+
+        protected override void Initialize()
+        {
+            ; // do nothing
         }
 
         protected override bool HasItems
@@ -49,9 +52,16 @@ namespace Runt.ViewModels
 
         internal static FileViewModel Get(FolderViewModel folderViewModel, FileInfo file)
         {
+            FileViewModel ret;
+
             if (file.Extension == ".cs")
-                return new CSharpFileViewModel(folderViewModel, file);
-            return new FileViewModel(folderViewModel, file);
+                ret = new CSharpFileViewModel(folderViewModel, file);
+
+            else
+                ret = new FileViewModel(folderViewModel, file);
+
+            ret.Initialize();
+            return ret;
         }
     }
 }

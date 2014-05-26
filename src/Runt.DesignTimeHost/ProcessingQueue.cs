@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -10,17 +11,21 @@ using Newtonsoft.Json;
 
 namespace Runt.DesignTimeHost
 {
-    class ProcessingQueue
+    class ProcessingQueue : IDisposable
     {
         private readonly BinaryReader _reader;
         private readonly BinaryWriter _writer;
+        private readonly Stream _stream;
+        private readonly Process _process;
 
         public event Action<Message> OnReceive;
 
-        public ProcessingQueue(Stream stream)
+        public ProcessingQueue(Stream stream, Process process)
         {
             _reader = new BinaryReader(stream);
             _writer = new BinaryWriter(stream);
+            _stream = stream;
+            _process = process;
         }
 
         public void Start()
@@ -53,6 +58,15 @@ namespace Runt.DesignTimeHost
             {
                 Console.WriteLine(ex.Message);
             }
+        }
+
+        public void Dispose()
+        {
+            try { _process.Close(); } catch { }
+            try { _process.Dispose(); } catch { }
+            _reader.Dispose();
+            _writer.Dispose();
+            _stream.Dispose();
         }
     }
 }

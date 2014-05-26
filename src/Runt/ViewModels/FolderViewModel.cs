@@ -21,19 +21,28 @@ namespace Runt.ViewModels
         readonly List<FileViewModel> _files;
         readonly FolderViewModel _parent;
 
-        bool _initialized = false;
-
         public event NotifyCollectionChangedEventHandler CollectionChanged;
 
         public static FolderViewModel Get(FolderViewModel parent, DirectoryInfo dir)
         {
+            FolderViewModel ret;
             if (dir.Name == "packages" && parent is WorkspaceViewModel)
-                return new PackagesViewModel(parent, dir, true);
+                ret = new PackagesViewModel(parent, dir, true);
 
-            if (dir.GetFiles("project.json", SearchOption.TopDirectoryOnly).Length == 1)
-                return new ProjectViewModel(parent, dir);
+            else if (dir.GetFiles("project.json", SearchOption.TopDirectoryOnly).Length == 1)
+                ret = new ProjectViewModel(parent, dir);
 
-            return new FolderViewModel(parent, dir);
+            else
+                ret = new FolderViewModel(parent, dir);
+
+            ret.Initialize();
+            return ret;
+        }
+
+        protected override void Initialize()
+        {
+            _dirs.AddRange(_dir.EnumerateDirectories().RemoveHidden().Select(d => Get(this, d)));
+            _files.AddRange(_dir.EnumerateFiles().RemoveHidden().Select(f => FileViewModel.Get(this, f)));
         }
 
         protected override bool HasItems
@@ -43,19 +52,6 @@ namespace Runt.ViewModels
 
         protected override IEnumerable GetItems()
         {
-            if (!_initialized)
-            {
-                lock (this)
-                {
-                    if (!_initialized)
-                    {
-                        _dirs.AddRange(_dir.EnumerateDirectories().RemoveHidden().Select(d => Get(this, d)));
-                        _files.AddRange(_dir.EnumerateFiles().RemoveHidden().Select(f => FileViewModel.Get(this, f)));
-                        _initialized = true;
-                    }
-                }
-            }
-
             return _dirs.Cast<object>().Concat(_files);
         }
 
@@ -80,7 +76,12 @@ namespace Runt.ViewModels
 
         public virtual string RelativePath
         {
-            get { return Path.Combine(_parent.RelativePath, Name); }
+            get { return System.IO.Path.Combine(_parent.RelativePath, Name); }
+        }
+
+        public virtual string Path
+        {
+            get { return _dir.FullName; }
         }
 
         public override void NotifyOfPropertyChange(string propertyName)

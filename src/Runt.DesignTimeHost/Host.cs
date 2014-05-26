@@ -2,12 +2,10 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Net.Sockets;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
+using Newtonsoft.Json.Linq;
 
 namespace Runt.DesignTimeHost
 {
@@ -17,7 +15,12 @@ namespace Runt.DesignTimeHost
         readonly string _hostId;
 
         string _runtimePath;
-        IDisposable _host;
+        ProcessingQueue _host;
+
+        public bool IsConnected
+        {
+            get { return _host != null; }
+        }
 
         public Host(string applicationRoot)
         {
@@ -35,11 +38,17 @@ namespace Runt.DesignTimeHost
         }
 
         public event EventHandler Connected;
-        //public event EventHandler<MessageEventArgs> Message;
-
         private void OnConnected(EventArgs e)
         {
             var c = Connected;
+            if (c != null)
+                c(this, e);
+        }
+
+        public event EventHandler<ConfigurationsEventArgs> Configurations;
+        private void OnConfigurations(ConfigurationsEventArgs e)
+        {
+            var c = Configurations;
             if (c != null)
                 c(this, e);
         }
@@ -50,7 +59,7 @@ namespace Runt.DesignTimeHost
             _host = StartRuntime(port);
         }
 
-        private IDisposable StartRuntime(int port)
+        private ProcessingQueue StartRuntime(int port)
         {
             var psi = new ProcessStartInfo
             {
@@ -107,18 +116,47 @@ namespace Runt.DesignTimeHost
 
             var networkStream = new NetworkStream(socket);
             var mapping = new Dictionary<int, string>();
-            var queue = new ProcessingQueue(networkStream);
+            var queue = new ProcessingQueue(networkStream, kreProcess);
 
             queue.OnReceive += OnReceive;
             queue.Start();
             OnConnected(new EventArgs());
 
-            return kreProcess;
+            return queue;
+        }
+
+        public void InitProject(int id, string path)
+        {
+            var payload = new Outgoing.InitializeMessage
+            {
+                ProjectFolder = path,
+                TargetFramework = "net45"
+            };
+
+            var msg = new Message
+            {
+                ContextId = id,
+                HostId = _hostId,
+                MessageType = "Initialize",
+                Payload = JToken.FromObject(payload)
+            };
+
+            if (_host != null)
+                _host.Post(msg);
         }
 
         private void OnReceive(Message obj)
         {
-            throw new NotImplementedException();
+            switch (obj.MessageType)
+            {
+                case "Configurations":
+                    var configurations = obj.Payload.ToObject<Incomming.ConfigurationsMessage>();
+                    OnConfigurations(new ConfigurationsEventArgs(obj.ContextId, configurations));
+                    break;
+
+                default:
+                    break;
+            }
         }
 
         public void Dispose()
