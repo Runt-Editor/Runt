@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -15,6 +16,7 @@ namespace Runt.ViewModels
     {
         readonly int _id;
         readonly Project _project;
+        readonly ReferencesViewModel _references;
 
         string _name;
 
@@ -24,6 +26,7 @@ namespace Runt.ViewModels
             var tuple = Workspace.Add(this);
             _id = tuple.Item1;
             _project = tuple.Item2;
+            _references = new ReferencesViewModel(this);
         }
 
         internal void ApplyConfigurations(ConfigurationsEventArgs e)
@@ -33,7 +36,7 @@ namespace Runt.ViewModels
 
         internal void ApplyReferences(ReferencesEventArgs e)
         {
-            
+            _references.Update(e);
         }
 
         public override ProjectViewModel Project
@@ -49,6 +52,11 @@ namespace Runt.ViewModels
         public override string Name
         {
             get { return _name ?? base.Name; }
+        }
+
+        protected override IEnumerable GetItems()
+        {
+            return new object[] { _references }.Concat(base.GetItems().Cast<object>());
         }
 
         public override ImageSource Icon

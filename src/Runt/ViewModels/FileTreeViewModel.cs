@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading;
 using System.Windows.Media;
 using Caliburn.Micro;
+using Runt.DesignTimeHost;
 
 namespace Runt.ViewModels
 {
@@ -33,6 +34,7 @@ namespace Runt.ViewModels
         protected abstract void Initialize();
 
         public abstract string Name { get; }
+
         public abstract ImageSource Icon { get; }
 
         public virtual WorkspaceViewModel Workspace
@@ -91,7 +93,7 @@ namespace Runt.ViewModels
         /// <summary>
         /// Raises a change notification indicating that all bindings should be refreshed.
         /// </summary>
-        protected new void Refresh()
+        protected virtual new void Refresh()
         {
             _items = null;
             Execute.OnUIThread(() =>

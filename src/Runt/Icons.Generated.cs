@@ -21,6 +21,9 @@ namespace Runt
         private static Lazy<ImageSource> _cSFile = new Lazy<ImageSource>(() => GetImage("CSharpFile_SolutionExplorerNode.png"));
         public static ImageSource CSFile { get { return _cSFile.Value; } }
 
+        private static Lazy<ImageSource> _reference = new Lazy<ImageSource>(() => GetImage("reference_16xLG.png"));
+        public static ImageSource Reference { get { return _reference.Value; } }
+
     }
 }
 

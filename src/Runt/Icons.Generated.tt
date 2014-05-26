@@ -10,6 +10,7 @@
     AddIcon("Document", "document_16xLG.png");
     AddIcon("Project", "CSharpProject_SolutionExplorerNode.png");
     AddIcon("CSFile", "CSharpFile_SolutionExplorerNode.png");
+    AddIcon("Reference", "reference_16xLG.png");
 #>
 
 using System;

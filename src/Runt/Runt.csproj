@@ -147,6 +147,7 @@
     <Compile Include="ViewModels\Kvm\RuntimeManagerViewModel.cs" />
     <Compile Include="ViewModels\PackagesViewModel.cs" />
     <Compile Include="ViewModels\ProjectViewModel.cs" />
+    <Compile Include="ViewModels\ReferencesViewModel.cs" />
     <Compile Include="ViewModels\ShellViewModel.cs" />
     <Compile Include="ViewModels\WorkspaceViewModel.cs" />
     <Compile Include="Views\FileTreeView.xaml.cs">
@@ -260,6 +261,9 @@
       <Project>{c44cae2c-8f7f-4e2b-8868-9f0b4219752b}</Project>
       <Name>Runt.Kvm</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Icons\reference_16xLG.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
