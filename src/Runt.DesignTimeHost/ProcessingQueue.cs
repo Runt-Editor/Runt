@@ -31,7 +31,10 @@ namespace Runt.DesignTimeHost
         public void Start()
         {
             Trace.TraceInformation("[ProcessingQueue]: Start()");
-            new Thread(ReceiveMessages).Start();
+            new Thread(ReceiveMessages)
+            {
+                IsBackground = true
+            }.Start();
         }
 
         public void Post(Message message)

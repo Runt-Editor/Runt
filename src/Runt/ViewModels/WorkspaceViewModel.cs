@@ -89,6 +89,8 @@ namespace Runt
         public void Dispose()
         {
             _watcher.Dispose();
+            _host.Dispose();
+            _workspace.Dispose();
         }
 
         public static WorkspaceViewModel Load(ShellViewModel shell, string path)
