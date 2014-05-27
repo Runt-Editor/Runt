@@ -1,0 +1,2 @@
+before_build:
+  - tools/NuGet/NuGet.exe restore Runt.sln
