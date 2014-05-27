@@ -5,8 +5,6 @@ VisualStudioVersion = 12.0.30501.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Runt", "src\Runt\Runt.csproj", "{EA43D710-810E-44FB-B99C-34A9E6901DD6}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{CCFB2B43-0742-4060-AF7E-23961EA38A1E}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Runt.Kvm", "src\Runt.Kvm\Runt.Kvm.csproj", "{C44CAE2C-8F7F-4E2B-8868-9F0B4219752B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Runt.DesignTimeHost", "src\Runt.DesignTimeHost\Runt.DesignTimeHost.csproj", "{DF40E7D2-EE4A-47B8-AD1F-5CE5B20EE5D8}"

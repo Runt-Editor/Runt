@@ -38,7 +38,17 @@ namespace Runt.DesignTimeHost
 
             public string Name
             {
-                get { return _ref.Name; }
+                get { return _ref.Name + (Unresolved ? " (unresolved)" : " (" + Version + ")"); }
+            }
+
+            public bool Unresolved
+            {
+                get { return _ref.Type == "Unresolved"; }
+            }
+
+            public string Version
+            {
+                get { return _ref.Version; }
             }
 
             public IImmutableList<Dependency> Dependencies

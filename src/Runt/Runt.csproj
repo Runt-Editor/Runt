@@ -40,6 +40,9 @@
     <Reference Include="Caliburn.Micro.Platform">
       <HintPath>..\..\packages\Caliburn.Micro.2.0.0-beta2\lib\net45\Caliburn.Micro.Platform.dll</HintPath>
     </Reference>
+    <Reference Include="ICSharpCode.AvalonEdit">
+      <HintPath>..\..\packages\AvalonEdit.4.4.2.9744\lib\Net40\ICSharpCode.AvalonEdit.dll</HintPath>
+    </Reference>
     <Reference Include="MahApps.Metro">
       <HintPath>..\..\packages\MahApps.Metro.0.14.0-ALPHA48\lib\net45\MahApps.Metro.dll</HintPath>
     </Reference>
@@ -139,6 +142,7 @@
     <Compile Include="ProxyModelAttribute.cs" />
     <Compile Include="Services\AssemblyNeutralAttribute.cs" />
     <Compile Include="ViewModels\CSharpFileViewModel.cs" />
+    <Compile Include="ViewModels\EditorViewModel.cs" />
     <Compile Include="ViewModels\FileTreeViewModel.cs" />
     <Compile Include="ViewModels\FileViewModel.cs" />
     <Compile Include="ViewModels\FolderViewModel.cs" />
@@ -150,6 +154,9 @@
     <Compile Include="ViewModels\ReferencesViewModel.cs" />
     <Compile Include="ViewModels\ShellViewModel.cs" />
     <Compile Include="ViewModels\WorkspaceViewModel.cs" />
+    <Compile Include="Views\EditorView.xaml.cs">
+      <DependentUpon>EditorView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\FileTreeView.xaml.cs">
       <DependentUpon>FileTreeView.xaml</DependentUpon>
     </Compile>
@@ -169,6 +176,10 @@
     <Page Include="Resources\Icons.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\EditorView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\FileTreeView.xaml">
       <SubType>Designer</SubType>

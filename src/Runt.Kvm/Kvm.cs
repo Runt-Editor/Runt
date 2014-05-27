@@ -41,21 +41,15 @@ namespace Runt
                 get { return "KRE-" + Runtime + "-" + Architecture; }
             }
 
-            internal static KRuntime Parse(string fullName)
+            internal static KRuntime Parse(string fullName, string path = null, bool active = false)
             {
-                var firstDot = fullName.IndexOf('.');
-                var lastDashBefore = fullName.Substring(0, firstDot).LastIndexOf('-');
+                var parts = fullName.Split(new[] { '.' }, 2);
+                var version = parts[1];
+                parts = parts[0].Split('-');
+                var runtime = parts[1];
+                var arch = parts[2];
 
-                string runtime = null, arch = null, version = fullName;
-                if (lastDashBefore != -1)
-                {
-                    var nameParts = fullName.Substring(0, lastDashBefore).Split(new[] { '-' }, 3);
-                    runtime = nameParts[1];
-                    arch = nameParts[2];
-                    version = fullName.Substring(lastDashBefore + 1);
-                }
-
-                return new KRuntime(null, version, runtime, arch, false);
+                return new KRuntime(path, version, runtime, arch, active);
             }
         }
 
@@ -241,22 +235,24 @@ namespace Runt
                     continue;
 
                 var active = false;
-                foreach (var portion in Environment.ExpandEnvironmentVariables("%PATH%").Split(';'))
+                var PATH = Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.User);
+                foreach (var portion in PATH.Split(';'))
                     if (portion.StartsWith(path.FullName, StringComparison.OrdinalIgnoreCase))
                         active = true;
 
-                var parts1 = path.Name.Split(new[] { '.' }, 2);
-                var parts2 = parts1[0].Split(new[] { '-' }, 3);
-                yield return new KRuntime(
-                    active: active,
-                    version: parts1[1],
-                    runtime: parts2[1],
-                    architecture: parts2[2],
-                    location: path.FullName);
+                yield return KRuntime.Parse(path.Name, path.FullName, active);
+                //var parts1 = path.Name.Split(new[] { '.' }, 2);
+                //var parts2 = parts1[0].Split(new[] { '-' }, 3);
+                //yield return new KRuntime(
+                //    active: active,
+                //    version: parts1[1],
+                //    runtime: parts2[1],
+                //    architecture: parts2[2],
+                //    location: path.FullName);
             }
         }
 
-        static void Use(string versionOrAlias)
+        static void Use(string versionOrAlias, string platform = defaultPlatform, string architecture = defaultArchitecture)
         {
             if(versionOrAlias == null)
             {
@@ -264,7 +260,7 @@ namespace Runt
                 return;
             }
 
-            var fullName = VersionOrAlias(versionOrAlias);
+            var fullName = VersionOrAlias(versionOrAlias, platform, architecture);
             var bin = LocateKreBinFromFullName(fullName);
             if (bin == null)
                 throw new ArgumentException("Version not found");
@@ -298,10 +294,12 @@ namespace Runt
             throw new ArgumentException("Alias not found");
         }
 
-        static void AliasSet(string name, string value)
+        static void AliasSet(string name, string version, string platform = defaultPlatform, string architecture = defaultArchitecture)
         {
             if (!Directory.Exists(userKreAlias))
                 Directory.CreateDirectory(userKreAlias);
+
+            string value = "KRE-" + platform + "-" + architecture + "." + version;
 
             var file = Path.Combine(userKreAlias, name + ".txt");
             File.WriteAllText(file, value + Environment.NewLine, Encoding.ASCII);
@@ -347,7 +345,7 @@ namespace Runt
                 version = versionOrAlias;
             }
 
-            return "KRE-" + platform + "-" + architecture + "-" + version;
+            return "KRE-" + platform + "-" + architecture + "." + version;
         }
 
         static string ChangePath(string oldPath, string prependPath, params string[] removePaths)
