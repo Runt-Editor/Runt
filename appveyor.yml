@@ -1,2 +1,6 @@
 before_build:
   - tools\NuGet\NuGet.exe restore Runt.sln
+
+artifacts:
+  - path: src\Runt\bin\Debug
+    name: Runt.zip
