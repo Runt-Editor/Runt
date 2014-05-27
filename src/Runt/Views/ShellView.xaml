@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
              xmlns:cali="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro.Platform"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="900" Background="#3e3e42">
@@ -74,7 +75,6 @@
         <Grid Height="Auto" Width="Auto" Grid.Row="2" Margin="5">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="300" />
-                <ColumnDefinition Width="Auto" MinWidth="10" />
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
 
@@ -102,6 +102,39 @@
                     </TreeView>
                 </Border>
             </Grid>
+
+            <TabControl Grid.Column="1" Margin="12,0,0,5" ItemsSource="{Binding Items}" SelectedItem="{Binding ActiveItem}">
+                <TabControl.ItemContainerStyle>
+                    <Style TargetType="{x:Type TabItem}">
+                        <Setter Property="Content">
+                            <Setter.Value>
+                                <ContentControl cali:View.Model="{Binding}" />
+                            </Setter.Value>
+                        </Setter>
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="{x:Type TabItem}">
+                                    <Grid>
+                                        <Border x:Name="Border">
+                                            <TextBlock Text="{Binding DisplayName}" VerticalAlignment="Center"
+                                                       Margin="12,2,12,2" Foreground="White" />
+                                        </Border>
+                                    </Grid>
+                                    
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsSelected" Value="True">
+                                            <Setter TargetName="Border" Property="Background" Value="#1585b5" />
+                                        </Trigger>
+                                        <Trigger Property="IsSelected" Value="False">
+                                            <Setter TargetName="Border" Property="Background" Value="{x:Null}" />
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </TabControl.ItemContainerStyle>
+            </TabControl>
         </Grid>
     </Grid>
 </UserControl>

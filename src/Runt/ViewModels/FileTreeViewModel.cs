@@ -33,6 +33,11 @@ namespace Runt.ViewModels
         protected abstract IEnumerable GetItems();
         protected abstract void Initialize();
 
+        public virtual void DoubleClicked()
+        {
+            ; // Do nothing
+        }
+
         public abstract string Name { get; }
 
         public abstract ImageSource Icon { get; }

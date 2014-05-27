@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.IO;
 using System.Windows.Media;
-using Microsoft.CodeAnalysis;
+using ICSharpCode.AvalonEdit.Document;
 using Microsoft.CodeAnalysis.Text;
+using Runt.Services;
 
 namespace Runt.ViewModels
 {
@@ -27,6 +23,16 @@ namespace Runt.ViewModels
         public override ImageSource Icon
         {
             get { return Icons.CSFile; }
+        }
+
+        public override void DoubleClicked()
+        {
+            Workspace.OpenFile(_file, new CSharpLanguageService());
+        }
+
+        public FileInfo File
+        {
+            get { return _file; }
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -103,6 +104,11 @@ namespace Runt.ViewModels
                     NotifyOfPropertyChange(() => Project);
                 }
             }
+        }
+
+        public void OpenFile()
+        {
+            Debugger.Break();
         }
 
         public void ManageKvmAlias()

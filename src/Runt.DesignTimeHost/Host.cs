@@ -169,7 +169,7 @@ namespace Runt.DesignTimeHost
 
                 default:
                     if (Debugger.IsAttached)
-                        Debugger.Break();
+                        ;// Debugger.Break();
                     break;
             }
         }

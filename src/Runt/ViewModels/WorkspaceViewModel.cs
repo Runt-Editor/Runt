@@ -4,7 +4,9 @@ using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.IO;
 using System.Threading;
+using ICSharpCode.AvalonEdit.Highlighting;
 using Microsoft.CodeAnalysis;
+using Runt.Core;
 using Runt.DesignTimeHost;
 using Runt.ViewModels;
 
@@ -36,6 +38,14 @@ namespace Runt
             _watcher.Changed += FileChanged;
 
             _workspace = new CustomWorkspace();
+            _shell = shell;
+        }
+
+        internal void OpenFile(FileInfo file, ILanguageService language)
+        {
+            var item = new EditorViewModel(file, language);
+            _shell.Items.Add(item);
+            _shell.ActivateItem(item);
         }
 
         private void HostReferences(object sender, ReferencesEventArgs e)

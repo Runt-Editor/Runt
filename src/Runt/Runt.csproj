@@ -99,6 +99,8 @@
     <Reference Include="System.Collections.Immutable">
       <HintPath>..\..\packages\Microsoft.Bcl.Immutable.1.1.22-beta\lib\portable-net45+win8+wpa81\System.Collections.Immutable.dll</HintPath>
     </Reference>
+    <Reference Include="System.ComponentModel.Composition" />
+    <Reference Include="System.ComponentModel.Composition.Registration" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Reflection.Metadata, Version=1.0.9.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
@@ -138,9 +140,13 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Icons.Generated.tt</DependentUpon>
     </Compile>
+    <Compile Include="Services\LanguageElementGenerator.cs" />
+    <Compile Include="Services\LanguageVisualLineTransformer.cs" />
     <Compile Include="MetroWindowManager.cs" />
     <Compile Include="ProxyModelAttribute.cs" />
+    <Compile Include="RuntTextEditor.cs" />
     <Compile Include="Services\AssemblyNeutralAttribute.cs" />
+    <Compile Include="Services\CSharpLanguageService.cs" />
     <Compile Include="ViewModels\CSharpFileViewModel.cs" />
     <Compile Include="ViewModels\EditorViewModel.cs" />
     <Compile Include="ViewModels\FileTreeViewModel.cs" />
@@ -154,9 +160,6 @@
     <Compile Include="ViewModels\ReferencesViewModel.cs" />
     <Compile Include="ViewModels\ShellViewModel.cs" />
     <Compile Include="ViewModels\WorkspaceViewModel.cs" />
-    <Compile Include="Views\EditorView.xaml.cs">
-      <DependentUpon>EditorView.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Views\FileTreeView.xaml.cs">
       <DependentUpon>FileTreeView.xaml</DependentUpon>
     </Compile>
@@ -176,10 +179,6 @@
     <Page Include="Resources\Icons.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Views\EditorView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\FileTreeView.xaml">
       <SubType>Designer</SubType>
@@ -264,6 +263,10 @@
     <Resource Include="Resources\Icons\CSharpFile_SolutionExplorerNode.png" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\Runt.Core\Runt.Core.csproj">
+      <Project>{319fcfe5-871c-4541-8856-49ef7659afe6}</Project>
+      <Name>Runt.Core</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Runt.DesignTimeHost\Runt.DesignTimeHost.csproj">
       <Project>{df40e7d2-ee4a-47b8-ad1f-5ce5b20ee5d8}</Project>
       <Name>Runt.DesignTimeHost</Name>
