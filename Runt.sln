@@ -9,7 +9,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Runt.Kvm", "src\Runt.Kvm\Ru
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Runt.DesignTimeHost", "src\Runt.DesignTimeHost\Runt.DesignTimeHost.csproj", "{DF40E7D2-EE4A-47B8-AD1F-5CE5B20EE5D8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Runt.Core", "Runt.Core\Runt.Core.csproj", "{319FCFE5-871C-4541-8856-49EF7659AFE6}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Runt.Core", "src\Runt.Core\Runt.Core.csproj", "{319FCFE5-871C-4541-8856-49EF7659AFE6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
