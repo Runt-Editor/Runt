@@ -87,7 +87,7 @@ namespace Runt.ViewModels
 
             public override string Name
             {
-                get { return _dep.Name; }
+                get { return _dep.Name + (_dep.Unresolved ? " (unresolved)" : (string.IsNullOrEmpty(_dep.Version) ? "" : " (" + _dep.Version + ")")); ; }
             }
 
             protected override bool HasItems

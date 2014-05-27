@@ -38,7 +38,7 @@ namespace Runt.DesignTimeHost
 
             public string Name
             {
-                get { return _ref.Name + (Unresolved ? " (unresolved)" : " (" + Version + ")"); }
+                get { return _ref.Name; }
             }
 
             public bool Unresolved
