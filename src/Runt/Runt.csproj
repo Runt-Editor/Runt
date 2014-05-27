@@ -263,7 +263,7 @@
     <Resource Include="Resources\Icons\CSharpFile_SolutionExplorerNode.png" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Runt.Core\Runt.Core.csproj">
+    <ProjectReference Include="..\Runt.Core\Runt.Core.csproj">
       <Project>{319fcfe5-871c-4541-8856-49ef7659afe6}</Project>
       <Name>Runt.Core</Name>
     </ProjectReference>
