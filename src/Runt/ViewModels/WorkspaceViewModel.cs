@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.IO;
+using System.Linq;
 using System.Threading;
-using ICSharpCode.AvalonEdit.Highlighting;
+using System.Threading.Tasks;
+using MahApps.Metro.Controls.Dialogs;
 using Microsoft.CodeAnalysis;
 using Runt.Core;
 using Runt.DesignTimeHost;
@@ -21,16 +22,15 @@ namespace Runt
         readonly ConcurrentDictionary<int, ProjectViewModel> _contexts = new ConcurrentDictionary<int, ProjectViewModel>();
 
         int _projectsIds;
+        TaskCompletionSource<bool> _connect;
 
         public WorkspaceViewModel(ShellViewModel shell, string path)
             : base(null, path)
         {
-            var runtime = Kvm.GetRuntime(shell.SelectedRuntime);
             _host = new Host(path);
             _host.Connected += HostConnected;
             _host.Configurations += HostConfigurations;
             _host.References += HostReferences;
-            _host.Start(runtime);
 
             _watcher = new FileSystemWatcher(path);
             _watcher.NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.FileName | NotifyFilters.Size | NotifyFilters.DirectoryName | NotifyFilters.LastAccess;
@@ -39,6 +39,23 @@ namespace Runt
 
             _workspace = new CustomWorkspace();
             _shell = shell;
+
+            InitializeWorkspace();
+        }
+
+        private async void InitializeWorkspace()
+        {
+            var ctrl = await _shell.Window.ShowProgressAsync("Setting up workspace", "Restoring packages");
+            ctrl.SetIndeterminate();
+
+            var runtime = Kvm.GetRuntime(_shell.SelectedRuntime);
+            await _host.RestorePackages(runtime, _dir.FullName);
+            ctrl.SetMessage("Setting up projects");
+            _connect = new TaskCompletionSource<bool>();
+            _host.Start(runtime);
+            await _connect.Task;
+            _connect = null;
+            await ctrl.CloseAsync();
         }
 
         internal void OpenFile(FileInfo file, ILanguageService language)
@@ -52,12 +69,20 @@ namespace Runt
         {
             var project = _contexts[e.ContextId];
             project.ApplyReferences(e);
+
+            if (_connect != null)
+                if (_contexts.Values.All(p => p.Configurated))
+                    _connect.TrySetResult(true);
         }
 
         private void HostConfigurations(object sender, ConfigurationsEventArgs e)
         {
             var project = _contexts[e.ContextId];
             project.ApplyConfigurations(e);
+
+            if (_connect != null)
+                if (_contexts.Values.All(p => p.Configurated))
+                    _connect.TrySetResult(true);
         }
 
         private void HostConnected(object sender, EventArgs e)

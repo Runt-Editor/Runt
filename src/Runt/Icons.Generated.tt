@@ -11,6 +11,7 @@
     AddIcon("Project", "CSharpProject_SolutionExplorerNode.png");
     AddIcon("CSFile", "CSharpFile_SolutionExplorerNode.png");
     AddIcon("Reference", "reference_16xLG.png");
+    AddIcon("NuGet", "NuGetPackageManager.2.5.0.png");
 #>
 
 using System;

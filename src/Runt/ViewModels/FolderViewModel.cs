@@ -16,7 +16,7 @@ namespace Runt.ViewModels
     [ProxyModel(typeof(FileTreeViewModel))]
     public class FolderViewModel : FileTreeViewModel
     {
-        readonly DirectoryInfo _dir;
+        protected readonly DirectoryInfo _dir;
         readonly List<FolderViewModel> _dirs;
         readonly List<FileViewModel> _files;
         readonly FolderViewModel _parent;

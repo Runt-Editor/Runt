@@ -19,6 +19,7 @@ namespace Runt.ViewModels
         readonly ReferencesViewModel _references;
 
         string _name;
+        bool _configurated, _referenced;
 
         public ProjectViewModel(FolderViewModel parent, DirectoryInfo dir)
             : base(parent, dir)
@@ -32,11 +33,13 @@ namespace Runt.ViewModels
         internal void ApplyConfigurations(ConfigurationsEventArgs e)
         {
             _name = e.ProjectName;
+            _configurated = true;
         }
 
         internal void ApplyReferences(ReferencesEventArgs e)
         {
             _references.Update(e);
+            _referenced = true;
         }
 
         public override ProjectViewModel Project
@@ -65,6 +68,11 @@ namespace Runt.ViewModels
             {
                 return Icons.Project;
             }
+        }
+
+        internal bool Configurated
+        {
+            get { return _configurated && _referenced; }
         }
     }
 }

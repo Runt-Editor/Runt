@@ -24,6 +24,9 @@ namespace Runt
         private static Lazy<ImageSource> _reference = new Lazy<ImageSource>(() => GetImage("reference_16xLG.png"));
         public static ImageSource Reference { get { return _reference.Value; } }
 
+        private static Lazy<ImageSource> _nuGet = new Lazy<ImageSource>(() => GetImage("NuGetPackageManager.2.5.0.png"));
+        public static ImageSource NuGet { get { return _nuGet.Value; } }
+
     }
 }
 

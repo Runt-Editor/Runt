@@ -5,6 +5,7 @@ using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
+using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 
 namespace Runt.DesignTimeHost
@@ -64,10 +65,10 @@ namespace Runt.DesignTimeHost
         private void Start()
         {
             var port = FreeTcpPort();
-            _host = StartRuntime(port);
+            StartRuntime(port);
         }
 
-        private ProcessingQueue StartRuntime(int port)
+        private void StartRuntime(int port)
         {
             var psi = new ProcessStartInfo
             {
@@ -128,9 +129,33 @@ namespace Runt.DesignTimeHost
 
             queue.OnReceive += OnReceive;
             queue.Start();
-            OnConnected(new EventArgs());
 
-            return queue;
+            _host = queue;
+            OnConnected(new EventArgs());
+        }
+
+        public Task RestorePackages(string runtime, string workingDir)
+        {
+            return Task.Run(() =>
+            {
+                var psi = new ProcessStartInfo
+                {
+                    FileName = Path.Combine(runtime, "klr.exe"),
+                    Arguments = String.Format(@"""{0}"" restore",
+                                          Path.Combine(runtime, "lib", "Microsoft.Framework.PackageManager", "Microsoft.Framework.PackageManager.dll")),
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    CreateNoWindow = true,
+                    UseShellExecute = false,
+                    WorkingDirectory = workingDir
+                };
+
+                var kreProcess = Process.Start(psi);
+                kreProcess.BeginOutputReadLine();
+                kreProcess.BeginErrorReadLine();
+                kreProcess.EnableRaisingEvents = true;
+                kreProcess.WaitForExit();
+            });
         }
 
         public void InitProject(int id, string path)

@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Media;
 
 namespace Runt.ViewModels
 {
@@ -22,6 +23,11 @@ namespace Runt.ViewModels
         protected override IEnumerable GetItems()
         {
             return Enumerable.Empty<object>();
+        }
+
+        public override ImageSource Icon
+        {
+            get { return Icons.NuGet; }
         }
     }
 }

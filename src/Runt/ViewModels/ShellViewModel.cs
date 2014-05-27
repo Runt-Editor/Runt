@@ -18,6 +18,7 @@ namespace Runt.ViewModels
     {
         readonly IWindowManager _wm;
         readonly BindableCollection<string> _aliases;
+        MetroWindow _window;
 
         FileSystemWatcher _watcher;
         bool _installKvm;
@@ -37,6 +38,11 @@ namespace Runt.ViewModels
         public BindableCollection<string> Runtimes
         {
             get { return _aliases; }
+        }
+
+        internal MetroWindow Window
+        {
+            get { return _window; }
         }
 
         public ShellViewModel(IWindowManager wm)
@@ -69,8 +75,9 @@ namespace Runt.ViewModels
         protected override void OnViewAttached(object view, object context)
         {
             base.OnViewAttached(view, context);
+            _window = (MetroWindow)((UserControl)view).Parent;
             if (_installKvm)
-                Execute.OnUIThreadAsync(async () => await InstallKvm((MetroWindow)((UserControl)view).Parent));
+                Execute.OnUIThreadAsync(async () => await InstallKvm(_window));
         }
 
         private async Task InstallKvm(MetroWindow window)
