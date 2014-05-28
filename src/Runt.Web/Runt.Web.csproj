@@ -1,0 +1,170 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.Default.props" Condition="Exists('$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.Default.props')" />
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>
+    </ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{78E6AA16-82FF-4527-A94C-01A872041D36}</ProjectGuid>
+    <ProjectTypeGuids>{349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Runt.Web</RootNamespace>
+    <AssemblyName>Runt.Web</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <UseIISExpress>true</UseIISExpress>
+    <IISExpressSSLPort />
+    <IISExpressAnonymousAuthentication />
+    <IISExpressWindowsAuthentication />
+    <IISExpressUseClassicPipelineMode />
+    <TypeScriptToolsVersion>1.0</TypeScriptToolsVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNet.Diagnostics">
+      <HintPath>..\..\packages\Microsoft.AspNet.Diagnostics.0.1-alpha-build-0744\lib\net45\Microsoft.AspNet.Diagnostics.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.AspNet.FileSystems">
+      <HintPath>..\..\packages\Microsoft.AspNet.FileSystems.0.1-alpha-build-0163\lib\net45\Microsoft.AspNet.FileSystems.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.AspNet.Http">
+      <HintPath>..\..\packages\Microsoft.AspNet.Http.0.1-alpha-build-0479\lib\net45\Microsoft.AspNet.Http.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.AspNet.HttpFeature">
+      <HintPath>..\..\packages\Microsoft.AspNet.HttpFeature.0.1-alpha-build-0479\lib\net45\Microsoft.AspNet.HttpFeature.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.AspNet.RequestContainer">
+      <HintPath>..\..\packages\Microsoft.AspNet.RequestContainer.0.1-alpha-build-0626\lib\net45\Microsoft.AspNet.RequestContainer.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.AspNet.Security.DataProtection">
+      <HintPath>..\..\packages\Microsoft.AspNet.Security.DataProtection.0.1-alpha-build-0154\lib\net45\Microsoft.AspNet.Security.DataProtection.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.AspNet.SignalR.Server">
+      <HintPath>..\..\packages\Microsoft.AspNet.SignalR.Server.0.1-alpha-build-0690\lib\net45\Microsoft.AspNet.SignalR.Server.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.AspNet.StaticFiles">
+      <HintPath>..\..\packages\Microsoft.AspNet.StaticFiles.0.1-alpha-build-0486\lib\net45\Microsoft.AspNet.StaticFiles.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Microsoft.Framework.ConfigurationModel">
+      <HintPath>..\..\packages\Microsoft.Framework.ConfigurationModel.0.1-alpha-build-0246\lib\net45\Microsoft.Framework.ConfigurationModel.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Framework.DependencyInjection">
+      <HintPath>..\..\packages\Microsoft.Framework.DependencyInjection.0.1-alpha-build-0411\lib\net45\Microsoft.Framework.DependencyInjection.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Framework.Logging">
+      <HintPath>..\..\packages\Microsoft.Framework.Logging.0.1-alpha-build-0180\lib\net45\Microsoft.Framework.Logging.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Framework.Runtime.Interfaces">
+      <HintPath>..\..\packages\Microsoft.Framework.Runtime.Interfaces.0.1-alpha-build-0472\lib\net45\Microsoft.Framework.Runtime.Interfaces.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Newtonsoft.Json.5.0.8\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Linq" />
+    <Reference Include="System.Reflection" />
+    <Reference Include="System.Runtime" />
+    <Reference Include="System.Security" />
+    <Reference Include="System.Web.DynamicData" />
+    <Reference Include="System.Web.Entity" />
+    <Reference Include="System.Web.ApplicationServices" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Web.Extensions" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Web.Services" />
+    <Reference Include="System.EnterpriseServices" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Startup.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="index.html" />
+    <Content Include="project.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="web.config" />
+    <Content Include="package.json" />
+    <None Include="web.Debug.config">
+      <DependentUpon>web.config</DependentUpon>
+    </None>
+    <None Include="web.Release.config">
+      <DependentUpon>web.config</DependentUpon>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <TypeScriptCompile Include="ts\app.ts" />
+    <TypeScriptCompile Include="ts\lib\promise.d.ts" />
+    <TypeScriptCompile Include="ts\signalr\connection.ts" />
+    <TypeScriptCompile Include="ts\signalr\http.ts" />
+    <TypeScriptCompile Include="ts\signalr\keepalivedata.ts" />
+    <TypeScriptCompile Include="ts\signalr\signalr.ts" />
+    <TypeScriptCompile Include="ts\signalr\transport.ts" />
+    <TypeScriptCompile Include="ts\signalr\utils.ts" />
+    <TypeScriptCompile Include="ts\_ref.d.ts" />
+  </ItemGroup>
+  <ItemGroup />
+  <PropertyGroup>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+  </PropertyGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.targets" Condition="Exists('$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.targets')" />
+  <Import Project="$(VSToolsPath)\WebApplications\Microsoft.WebApplication.targets" Condition="'$(VSToolsPath)' != ''" />
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" Condition="false" />
+  <ProjectExtensions>
+    <VisualStudio>
+      <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}">
+        <WebProjectProperties>
+          <UseIIS>True</UseIIS>
+          <AutoAssignPort>True</AutoAssignPort>
+          <DevelopmentServerPort>63557</DevelopmentServerPort>
+          <DevelopmentServerVPath>/</DevelopmentServerVPath>
+          <IISUrl>http://localhost:63557/</IISUrl>
+          <NTLMAuthentication>False</NTLMAuthentication>
+          <UseCustomServer>False</UseCustomServer>
+          <CustomServerUrl>
+          </CustomServerUrl>
+          <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
+        </WebProjectProperties>
+      </FlavorProperties>
+    </VisualStudio>
+  </ProjectExtensions>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

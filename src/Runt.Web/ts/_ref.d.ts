@@ -1,0 +1,1 @@
+﻿/// <reference path="lib/promise.d.ts" /> 

@@ -11,6 +11,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Runt.DesignTimeHost", "src\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Runt.Core", "src\Runt.Core\Runt.Core.csproj", "{319FCFE5-871C-4541-8856-49EF7659AFE6}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Runt.Bootstrap", "src\Runt.Bootstrap\Runt.Bootstrap.csproj", "{A4BB9031-68A6-4E79-8A3A-8A27E677E733}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Runt.Web", "src\Runt.Web\Runt.Web.csproj", "{78E6AA16-82FF-4527-A94C-01A872041D36}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +37,14 @@ Global
 		{319FCFE5-871C-4541-8856-49EF7659AFE6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{319FCFE5-871C-4541-8856-49EF7659AFE6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{319FCFE5-871C-4541-8856-49EF7659AFE6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A4BB9031-68A6-4E79-8A3A-8A27E677E733}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A4BB9031-68A6-4E79-8A3A-8A27E677E733}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A4BB9031-68A6-4E79-8A3A-8A27E677E733}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A4BB9031-68A6-4E79-8A3A-8A27E677E733}.Release|Any CPU.Build.0 = Release|Any CPU
+		{78E6AA16-82FF-4527-A94C-01A872041D36}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{78E6AA16-82FF-4527-A94C-01A872041D36}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{78E6AA16-82FF-4527-A94C-01A872041D36}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{78E6AA16-82FF-4527-A94C-01A872041D36}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

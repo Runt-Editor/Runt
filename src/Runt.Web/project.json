@@ -1,0 +1,17 @@
+﻿{
+    "name":  "Runt.Web",
+    "version":  "0.1-alpha-*",
+    "dependencies":  {
+        "Helios": "0.1-alpha-*",
+        "Microsoft.AspNet.Mvc": "0.1-alpha-*",
+        "Microsoft.AspNet.SignalR.Server":  "0.1-alpha-*",
+        "Microsoft.AspNet.Server.WebListener": "0.1-alpha-*",
+        "Microsoft.AspNet.RequestContainer":  "0.1-alpha-*",
+        "Microsoft.AspNet.StaticFiles": "0.1-alpha-*",
+        "Microsoft.AspNet.Diagnostics":  "0.1-alpha-*"
+    },
+    "configurations":  {
+        "net45":  {}
+    },
+    "resources":  ["index.html", "js/**"]
+}
