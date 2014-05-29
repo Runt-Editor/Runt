@@ -104,7 +104,15 @@ define(["require", "exports"], function(require, exports) {
         };
 
         DefaultClient.prototype.send = function (url, method, data, prepareRequest, isLongRunning) {
-            var request = new XhrRequest(url, method, JSON.stringify(data), isLongRunning);
+            var formData = '';
+            if (data !== null) {
+                Object.getOwnPropertyNames(data).forEach(function (name) {
+                    formData += '&' + encodeURIComponent(name) + '=' + encodeURIComponent(data[name]);
+                });
+                formData = formData.substring(1);
+            }
+
+            var request = new XhrRequest(url, method, formData, isLongRunning);
             prepareRequest(request);
             return request.send();
         };
@@ -112,4 +120,3 @@ define(["require", "exports"], function(require, exports) {
     })();
     exports.DefaultClient = DefaultClient;
 });
-//# sourceMappingURL=http.js.map

@@ -1,6 +1,7 @@
 ﻿{
     "name":  "Runt.Web",
     "version":  "0.1-alpha-*",
+    "authors":  ["Alxandr"],
     "dependencies":  {
         "Helios": "0.1-alpha-*",
         "Microsoft.AspNet.Mvc": "0.1-alpha-*",
@@ -9,7 +10,8 @@
         "Microsoft.AspNet.RequestContainer":  "0.1-alpha-*",
         "Microsoft.AspNet.StaticFiles": "0.1-alpha-*",
         "Microsoft.AspNet.Diagnostics":  "0.1-alpha-*",
-        "Runt.Core":  ""
+        "Runt.Core":  "",
+        "Runt.Service":  ""
     },
     "configurations":  {
         "net45":  {}

@@ -134,7 +134,15 @@ export class DefaultClient implements IClient {
     }
 
     private send(url: string, method: string, data: { [s: string]: string }, prepareRequest: (request: IRequest) => void, isLongRunning: boolean): Promise<IResponse> {
-        var request = new XhrRequest(url, method, JSON.stringify(data), isLongRunning);
+        var formData = '';
+        if (data !== null) {
+            Object.getOwnPropertyNames(data).forEach(name => {
+                formData += '&' + encodeURIComponent(name) + '=' + encodeURIComponent(data[name]);
+            });
+            formData = formData.substring(1);
+        }
+
+        var request = new XhrRequest(url, method, /*JSON.stringify(data)*/formData, isLongRunning);
         prepareRequest(request);
         return request.send();
     }

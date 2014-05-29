@@ -5,12 +5,14 @@ using Microsoft.AspNet.FileSystems;
 using Microsoft.AspNet.SignalR;
 using Microsoft.AspNet.StaticFiles;
 using Microsoft.Framework.DependencyInjection;
+using Runt.Core;
+using Runt.Service;
 
 namespace Runt.Web
 {
     public class Startup
     {
-        readonly IFileSystem fileSystem = new PhysicalFileSystem(@"C:\Users\alxan_000\Documents\Visual Studio 2013\Projects\Runt\src\Runt.Web");
+        readonly IFileSystem fileSystem = new PhysicalFileSystem(@"C:\Users\alxan_000\Documents\GitHub\Runt\src\Runt.Web");
         readonly IContentTypeProvider contentTypeProvider = new FileExtensionContentTypeProvider(new Dictionary<string, string>
         {
             { ".map", "application/json" },
@@ -24,6 +26,7 @@ namespace Runt.Web
             app.UseServices(services =>
             {
                 services.AddSignalR();
+                services.AddTransient<IEditor, Editor>();
             });
 
             app.UseSignalR("/io", typeof(RuntConnection), new ConnectionConfiguration

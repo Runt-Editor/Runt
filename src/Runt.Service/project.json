@@ -1,0 +1,13 @@
+﻿{
+    "name":  "Runt.Service",
+    "version":  "0.1-alpha-*",
+    "authors":  ["Alxandr"],
+    "dependencies":  {
+        "Microsoft.Framework.DependencyInjection":  "0.1-alpha-*",
+        "Runt.Core":  ""
+    },
+    "configurations":  {
+        "net45":  {}
+    },
+    "resources":  ["index.html", "js/**"]
+}

@@ -519,7 +519,10 @@ define(["require", "exports", './keepalivedata', './transport', './http', './uti
                 args[_i] = arguments[_i + 2];
             }
             if ((level & this._traceLevel) === level) {
-                console.log(utils.formatString(format, args));
+                if (console && console.info)
+                    console.info(utils.formatString(format, args));
+                else if (console)
+                    console.log(utils.formatString(format, args));
             }
         };
 
@@ -595,4 +598,3 @@ define(["require", "exports", './keepalivedata', './transport', './http', './uti
     })(exports.Utils || (exports.Utils = {}));
     var Utils = exports.Utils;
 });
-//# sourceMappingURL=connection.js.map

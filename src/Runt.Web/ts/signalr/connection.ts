@@ -449,7 +449,10 @@ export class Connection implements IConnection {
 
     public trace(level: TraceLevels, format: string, ...args: string[]): void {
         if ((level & this._traceLevel) === level) {
-            console.log(utils.formatString(format, args));
+            if (console && console.info)
+                console.info(utils.formatString(format, args));
+            else if (console)
+                console.log(utils.formatString(format, args));
         }
     }
 
