@@ -21,7 +21,7 @@ gulp.task('rjs', ['build-ts'], function() {
   }).pipe(gulp.dest('js'));
 });
 
-gulp.task('default', function() {
+gulp.task('watch', function() {
   return watch({glob: 'ts/**/*.ts'})
     .pipe(plumber())
     .pipe(tcs({
@@ -30,3 +30,5 @@ gulp.task('default', function() {
     }))
     .pipe(gulp.dest('js'));
 });
+
+gulp.task('default', ['rjs']);
