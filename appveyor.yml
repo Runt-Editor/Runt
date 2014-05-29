@@ -1,6 +1,39 @@
-before_build:
-  - tools\NuGet\NuGet.exe restore Runt.sln
+# Fix line endings in Windows. (runs before repo cloning)
+init:
+  - git config --global core.autocrlf input
+
+# this turns of AppVeyor automatic searching for test-assemblies, not the actual testing
+test: off
+
+install:
+  # Get the latest stable version of Node 0.STABLE.latest
+  - ps: Update-NodeJsInstallation (Get-NodeJsLatestBuild $env:nodejs_version)
+
+  - cd "src\Runt.Web"
+  - npm install
+  - bower install
+  - cd "..\.."
+
+environment:
+  XUNIT_TEST_VISITOR: Xunit.KRunner.AppVeyor
+
+  # This doesn't actually do anything, except get used in a PS script that installs Node
+  nodejs_version: "0.11"
+
+build:
+  project: "src\Runt.Bootstrap\Runt.Bootstrap.csproj"
+  publish_wap: false
+  publish_wap_xcopy: false
+  publish_azure: false
+  publish_nuget: false
+
+after_build:
+  - build.cmd
 
 artifacts:
-  - path: src\Runt\bin\Debug
+  - path: artifacts\build\*.nupkg
+  - path: src\Runt.Bootstrap\bin\Debug
     name: Runt
+
+before_build:
+  - tools\NuGet\NuGet.exe restore Runt.sln

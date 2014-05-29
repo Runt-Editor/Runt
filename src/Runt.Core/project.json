@@ -1,0 +1,8 @@
+﻿{
+    "name":  "Runt.Core",
+    "authors":  ["Alxandr"],
+    "version":  "0.1-alpha-*",
+    "dependencies":  {
+
+    }
+}

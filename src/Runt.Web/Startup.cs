@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.FileSystems;
+using Microsoft.AspNet.SignalR;
 using Microsoft.AspNet.StaticFiles;
 using Microsoft.Framework.DependencyInjection;
 
@@ -25,7 +26,10 @@ namespace Runt.Web
                 services.AddSignalR();
             });
 
-            app.UseSignalR();
+            app.UseSignalR("/io", typeof(RuntConnection), new ConnectionConfiguration
+            {
+                EnableJSONP = false
+            });
             app.UseDefaultFiles();
             app.UseStaticFiles(new StaticFileOptions
             {
