@@ -1,10 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.FileSystems;
 using Microsoft.AspNet.SignalR;
 using Microsoft.AspNet.StaticFiles;
 using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.Runtime;
 using Runt.Core;
 using Runt.Service;
 
@@ -12,7 +15,6 @@ namespace Runt.Web
 {
     public class Startup
     {
-        readonly IFileSystem fileSystem = new PhysicalFileSystem(@"C:\Users\alxan_000\Documents\GitHub\Runt\src\Runt.Web");
         readonly IContentTypeProvider contentTypeProvider = new FileExtensionContentTypeProvider(new Dictionary<string, string>
         {
             { ".map", "application/json" },
@@ -21,8 +23,14 @@ namespace Runt.Web
             { ".html", "text/html" }
         });
 
-        public void Configure(IBuilder app)
+        public void Configure(IBuilder app, ILibraryManager libManager)
         {
+            var web = libManager.GetLibraryInformation("Runt.Web");
+
+            Console.WriteLine("Path: " + web.Path);
+            Console.WriteLine("Name: " + web.Name);
+            var fileSystem = new PhysicalFileSystem(Path.GetDirectoryName(web.Path));
+
             app.UseServices(services =>
             {
                 services.AddSignalR();
@@ -33,7 +41,10 @@ namespace Runt.Web
             {
                 EnableJSONP = false
             });
-            app.UseDefaultFiles();
+            app.UseDefaultFiles(new DefaultFilesOptions
+            {
+                FileSystem = fileSystem
+            });
             app.UseStaticFiles(new StaticFileOptions
             {
                 FileSystem = fileSystem,
