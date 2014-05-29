@@ -12,7 +12,7 @@ build_script:
 
 environment:
   XUNIT_TEST_VISITOR: Xunit.KRunner.AppVeyor
-  K_BUILD_VERSION: {build}
+  K_BUILD_VERSION: "{build}"
 
 artifacts:
   - path: artifacts\build\*.nupkg
