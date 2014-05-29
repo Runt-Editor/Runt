@@ -6,7 +6,7 @@ var AUTHORS='Alxandr'
 use-standard-lifecycle
 k-standard-goals
 
-#run-gulp .restore-npm-modules .restore-bower-components target='compile'
+#run-gulp .restore-npm-modules .restore-bower-components target='initialize'
   -// Find all dirs that contain a Gulpfile.js file
   var gulpDirs = '${GetDirectoriesContaining(Directory.GetCurrentDirectory(), "Gulpfile.js")}'
   gulp each='var gulpDir in gulpDirs'
