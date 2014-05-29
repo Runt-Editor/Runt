@@ -1,30 +1,43 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Runt.Core;
+using Runt.Core.Model;
 
 namespace Runt.Service
 {
     public class Editor : IEditor
     {
+        private EditorState _state;
+
         public IClientConnection ClientConnection { get; set; }
 
         public void NotifyConnected()
         {
-            ClientConnection.Send("hello");
-
-            Task.Run(async () =>
-            {
-                for (var i = 0; i < 10; i++)
-                {
-                    await Task.Delay(TimeSpan.FromSeconds(2));
-                    await ClientConnection.Send("ping: " + i);
-                }
-            });
+            Send(Messages.State(_state));
         }
 
         public void NotifyReceived(string data)
         {
-            ClientConnection.Send("Pong: " + data);
+            
+        }
+
+        private void Send(string message)
+        {
+            var conn = ClientConnection;
+            if (conn != null)
+                conn.Send(message);
+        }
+
+        static void Update(ref EditorState state, Func<EditorState, EditorState> change)
+        {
+            while(true)
+            {
+                var original = Volatile.Read(ref state);
+                var newState = change(original);
+                if (ReferenceEquals(Interlocked.CompareExchange(ref state, newState, original), original))
+                    return;
+            }
         }
     }
 }
