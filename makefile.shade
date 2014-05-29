@@ -11,6 +11,8 @@ k-standard-goals
   var gulpDirs = '${GetDirectoriesContaining(Directory.GetCurrentDirectory(), "Gulpfile.js")}'
   gulp each='var gulpDir in gulpDirs'
 
+#restore-bootstrap target='compile'
+  exec program='.nuget/nuget.exe' commandline='restore "${Path.Combine(Directory.GetCurrentDirectory(), "src", "Runt.Bootstrap", "Runt.Bootstrap.csproj")}"'
 
-#compile-bootstrap target='compile'
+#compile-bootstrap .restore-bootstrap target='compile'
   exec program='msbuild' commandline='"${Path.Combine(Directory.GetCurrentDirectory(), "src", "Runt.Bootstrap", "Runt.Bootstrap.csproj")}"'
