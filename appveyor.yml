@@ -34,6 +34,7 @@ after_build:
 
 artifacts:
   - path: artifacts\build\*.nupkg
+
   - path: src\Runt.Bootstrap\bin\Debug
     name: Runt
 
