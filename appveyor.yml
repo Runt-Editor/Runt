@@ -12,6 +12,8 @@ install:
   - cd "src\Runt.Web"
   - npm install
   - bower install
+  - npm install -g gulp
+  - gulp rjs
   - cd "..\.."
 
 environment:
