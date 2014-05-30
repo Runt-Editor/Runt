@@ -1,0 +1,9 @@
+default currentDir = '${Directory.GetCurrentDirectory()}'
+default nodeDir = '${Path.Combine(currentDir, "bin", "nodejs")}'
+var gulpInstalled = '${Directory.Exists(Path.Combine(nodeDir, "node_modules", "gulp"))}'
+
+-// Install gulp locally
+npm npmCommand='install --prefix ${nodeDir} gulp' if='!gulpInstalled' once='installGulp'
+
+-// Run gulp
+node nodeCommand='${Path.Combine(nodeDir, "node_modules", "gulp", "bin", "gulp.js")}' workingdir='${gulpDir}'
