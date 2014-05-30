@@ -9,37 +9,37 @@ var gulp = require('gulp'),
 
 gulp.task('build-ts', function() {
   return gulp.src('ts/**/*.js')
-  .pipe(tcs({
-    sourcemaps: true,
-    module: 'amd'
-  }))
-  .pipe(gulp.dest('js'));
-});
-
-gulp.task('_rjs', ['build-ts'], function() {
-  rjs({
-    baseUrl: './js/',
-    name: 'app',
-    out: 'app.js'
-  }).pipe(gulp.dest('tmp'));
-});
-
-gulp.task('_clean-js', ['_rjs'], function() {
-  return gulp.src('js', {read: false})
-    .pipe(clean({force: true}));
-});
-
-gulp.task('_moveBack', ['_clean-js'], function() {
-  return gulp.src('tmp/app.js', {base: './tmp'})
+    .pipe(tcs({
+      sourcemaps: true,
+      module: 'amd'
+    }))
     .pipe(gulp.dest('js'));
 });
 
-gulp.task('_cleanTmp', ['_moveBack'], function() {
-  return gulp.src('tmp', {read: false})
-    .pipe(clean({force: true}));
+gulp.task('build-view', function() {
+  return gulp.src('view/**/*.jsx')
+    .pipe(react())
+    .pipe(gulp.dest('js/view'));
 });
 
-gulp.task('build', ['_moveBack', '_cleanTmp']);
+gulp.task('rjs', ['build-ts', 'build-view'], function() {
+  rjs({
+    baseUrl: './js/',
+    name: 'app',
+    out: 'app.js',
+    paths: {
+      react: 'empty:'
+    }
+  }).pipe(gulp.dest('dist'));
+});
+
+gulp.task('css', function() {
+  return gulp.src('style/app.stylus')
+    .pipe(stylus())
+    .pipe(gulp.dest('dist'));
+});
+
+gulp.task('build', ['rjs', 'css']);
 
 gulp.task('watch', function() {
   watch({glob: 'ts/**/*.ts'})
