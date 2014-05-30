@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR;
+using Newtonsoft.Json.Linq;
 using Runt.Core;
 
 namespace Runt.Web
@@ -51,7 +52,7 @@ namespace Runt.Web
 
             public Task Send(string message)
             {
-                return _conn.Connection.Send(_id, message);
+                return _conn.Connection.Send(_id, new JRaw(message));
             }
         }
     }

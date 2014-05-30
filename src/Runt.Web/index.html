@@ -2,7 +2,14 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <title>Runt</title>
-    <script data-main="/js/app" src="/bower_components/requirejs/require.js" async></script>
+    <script data-main="/js/app" src="/bower_components/requirejs/require.js"></script>
+    <script>
+        require.config({
+            paths: {
+                react: '//cdnjs.cloudflare.com/ajax/libs/react/0.10.0/react-with-addons'
+            }
+        });
+    </script>
 </head>
 <body>
 

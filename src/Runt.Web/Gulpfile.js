@@ -3,7 +3,8 @@ var gulp = require('gulp'),
     rjs = require('gulp-requirejs'),
     plumber = require('gulp-plumber'),
     tcs = require('gulp-typescript-compiler'),
-    clean = require('gulp-clean');
+    clean = require('gulp-clean'),
+    react = require('gulp-react');
 
 gulp.task('build-ts', function() {
   return gulp.src('ts/**/*.js')
@@ -40,13 +41,18 @@ gulp.task('_cleanTmp', ['_moveBack'], function() {
 gulp.task('build', ['_moveBack', '_cleanTmp']);
 
 gulp.task('watch', function() {
-  return watch({glob: 'ts/**/*.ts'})
+  watch({glob: 'ts/**/*.ts'})
     .pipe(plumber())
     .pipe(tcs({
       sourcemaps: true,
       module: 'amd'
     }))
     .pipe(gulp.dest('js'));
+
+  watch({glob: 'view/**/*.jsx'})
+    .pipe(plumber())
+    .pipe(react())
+    .pipe(gulp.dest('js/view'));
 });
 
 gulp.task('default', ['build']);

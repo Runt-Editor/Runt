@@ -15,6 +15,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Runt.Bootstrap", "src\Runt.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Runt.Web", "src\Runt.Web\Runt.Web.csproj", "{78E6AA16-82FF-4527-A94C-01A872041D36}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Runt.Service", "src\Runt.Service\Runt.Service.csproj", "{AEE04B31-6349-4340-B37A-FF1B54AD25F8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -45,6 +47,10 @@ Global
 		{78E6AA16-82FF-4527-A94C-01A872041D36}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{78E6AA16-82FF-4527-A94C-01A872041D36}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{78E6AA16-82FF-4527-A94C-01A872041D36}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AEE04B31-6349-4340-B37A-FF1B54AD25F8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AEE04B31-6349-4340-B37A-FF1B54AD25F8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AEE04B31-6349-4340-B37A-FF1B54AD25F8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AEE04B31-6349-4340-B37A-FF1B54AD25F8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

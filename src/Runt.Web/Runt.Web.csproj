@@ -104,6 +104,13 @@
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RuntConnection.cs" />
+    <Compile Include="Services\AssemblyNeutralAttribute.cs" />
+    <Compile Include="Services\IApplicationEnvironment.cs" />
+    <Compile Include="Services\ILibraryExport.cs" />
+    <Compile Include="Services\ILibraryInformation.cs" />
+    <Compile Include="Services\ILibraryManager.cs" />
+    <Compile Include="Services\IMetadataReference.cs" />
+    <Compile Include="Services\ISourceReference.cs" />
     <Compile Include="Startup.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -138,6 +145,10 @@
     <ProjectReference Include="..\Runt.Core\Runt.Core.csproj">
       <Project>{319fcfe5-871c-4541-8856-49ef7659afe6}</Project>
       <Name>Runt.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Runt.Service\Runt.Service.csproj">
+      <Project>{aee04b31-6349-4340-b37a-ff1b54ad25f8}</Project>
+      <Name>Runt.Service</Name>
     </ProjectReference>
   </ItemGroup>
   <PropertyGroup>

@@ -4,7 +4,7 @@
     "authors":  ["Alxandr"],
     "dependencies":  {
         "Microsoft.Framework.DependencyInjection":  "0.1-alpha-*",
-        "Newtonsoft.Json": "5.0.8"
+        "Newtonsoft.Json": "5.0.8",
         "Runt.Core":  ""
     },
     "configurations":  {
