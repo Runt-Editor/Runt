@@ -92,5 +92,11 @@ namespace Runt.Service
         {
             Update(Utils.Update((EditorState s) => s.WithDialog(Dialog.Browse())));
         }
+
+        [Command("browse-project")]
+        public void BrowseProject(string path)
+        {
+            Update(Utils.Update((EditorState s) => s.WithDialog(Dialog.Browse(path))));
+        }
     }
 }

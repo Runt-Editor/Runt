@@ -4,7 +4,8 @@ var gulp = require('gulp'),
     plumber = require('gulp-plumber'),
     tcs = require('gulp-typescript-compiler'),
     clean = require('gulp-clean'),
-    react = require('gulp-react');
+    react = require('gulp-react'),
+    stylus = require('gulp-stylus');
 
 gulp.task('build-ts', function() {
   return gulp.src('ts/**/*.js')
@@ -53,6 +54,11 @@ gulp.task('watch', function() {
     .pipe(plumber())
     .pipe(react())
     .pipe(gulp.dest('js/view'));
+
+  watch({glob: 'style/**/*.stylus'})
+    .pipe(plumber())
+    .pipe(stylus())
+    .pipe(gulp.dest('css'));
 });
 
 gulp.task('default', ['build']);

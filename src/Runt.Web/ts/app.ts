@@ -8,7 +8,7 @@ var connection = new conn.Connection(window.location.protocol + '//' + window.lo
 connection.start().then(() => {
     window.setTimeout(() => {
         invoke('browse-project');
-    }, 2000);
+    }, 500);
 });
 connection.received.on(message => {
     try {
@@ -59,4 +59,8 @@ function invoke(name, ...args): void {
         name: name,
         args: args
     }));
+}
+
+export function browseProject(path: string): void {
+    invoke('browse-project', path);
 }
