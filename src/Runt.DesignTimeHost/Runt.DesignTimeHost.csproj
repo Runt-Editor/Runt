@@ -45,29 +45,21 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="EventArgs\ConfigurationsEventArgs.cs" />
-    <Compile Include="EventArgs\ProjectEventArgs.cs" />
-    <Compile Include="EventArgs\ReferencesEventArgs.cs" />
     <Compile Include="Host.cs" />
-    <Compile Include="Incomming\CompilationSettings.cs" />
-    <Compile Include="Incomming\ConfigurationData.cs" />
-    <Compile Include="Incomming\ConfigurationsMessage.cs" />
-    <Compile Include="Incomming\DiagnosticsMessage.cs" />
-    <Compile Include="Incomming\ErrorMessage.cs" />
-    <Compile Include="Incomming\ReferenceDescription.cs" />
-    <Compile Include="Incomming\ReferenceItem.cs" />
-    <Compile Include="Incomming\ReferencesMessage.cs" />
-    <Compile Include="Incomming\SourcesMessage.cs" />
     <Compile Include="Message.cs" />
-    <Compile Include="Outgoing\ChangeTargetFrameworkMessage.cs" />
-    <Compile Include="Outgoing\InitializeMessage.cs" />
     <Compile Include="ProcessingQueue.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="project.json" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="..\Runt.Core\Runt.Core.csproj">
+      <Project>{319fcfe5-871c-4541-8856-49ef7659afe6}</Project>
+      <Name>Runt.Core</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

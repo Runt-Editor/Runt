@@ -16,15 +16,16 @@ namespace Runt.Core.Model
             _dialog = dialog;
         }
 
-        public EditorState WithDialog(JObject dialog)
+        public EditorState WithDialog(JObject dialog, JObject changes, JObject partials = null)
         {
+            Utils.RegisterChange(changes, () => Dialog, dialog, partials);
             return new EditorState(_workspace, dialog);
         }
 
-        public EditorState WithWorkspace(Workspace workspace)
+        public EditorState WithWorkspace(Workspace workspace, JObject changes, JObject partials = null)
         {
-            // Setting workspace allways clears out the current dialog (and basically anything else)
-            return new EditorState(workspace, null);
+            Utils.RegisterChange(changes, () => Workspace, workspace, partials);
+            return new EditorState(workspace, _dialog);
         }
 
         [JsonProperty("workspace")]

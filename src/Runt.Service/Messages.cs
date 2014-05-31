@@ -40,9 +40,9 @@ namespace Runt.Service
             return Message("state", sb.ToString());
         }
 
-        public static string StateUpdate(EditorState state)
+        public static string StateUpdate(JObject diff)
         {
-            return State(state, _ignoreDefault);
+            return Message("state", diff.ToString(Formatting.None));
         }
     }
 }

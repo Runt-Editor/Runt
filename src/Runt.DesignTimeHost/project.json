@@ -1,0 +1,17 @@
+﻿{
+    "name": "Runt.DesignTimeHost",
+    "version": "0.1-alpha-*",
+    "authors": [ "Alxandr" ],
+    "dependencies": {
+        "Newtonsoft.Json": "5.0.8",
+        "Microsoft.Bcl.Immutable": "1.1.22-beta",
+        "Runt.Core": ""
+    },
+    "configurations": {
+        "net45": {
+            "dependencies": {
+                "System.Runtime": ""
+            }
+        }
+    }
+}

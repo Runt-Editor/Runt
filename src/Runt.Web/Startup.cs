@@ -23,7 +23,7 @@ namespace Runt.Web
             { ".html", "text/html" }
         });
 
-        public void Configure(IBuilder app, ILibraryManager libManager)
+        public void Configure(IBuilder app, ILibraryManager libManager, IApplicationShutdown shutdown)
         {
             var web = libManager.GetLibraryInformation("Runt.Web");
 
@@ -34,7 +34,7 @@ namespace Runt.Web
             app.UseServices(services =>
             {
                 services.AddSignalR();
-                services.AddTransient<IEditor, Editor>();
+                services.AddSingleton<IEditor, Editor>();
             });
 
             app.UseSignalR("/io", typeof(RuntConnection), new ConnectionConfiguration

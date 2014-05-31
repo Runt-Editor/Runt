@@ -201,6 +201,115 @@ define(['require', 'exports', 'react', 'app'], function(require, exports, React,
     }
   });
 
+  var FileTree = React.createClass({
+    getInitialState: function() {
+      return {
+        open: [],
+        global: null
+      };
+    },
+
+    componentWillReceiveProps: function(newProps) {
+      if(newProps.content && newProps.content.key && newProps.content.key !== this.state.global) {
+        this.setState({
+          open: [newProps.content.key],
+          workspace: newProps.content.key
+        });
+      }
+    },
+
+    render: function() {
+      var _this = this;
+      var items = [];
+      function getIcon(type) {
+        switch(type) {
+          case 'file': return 'file';
+          case 'project': return 'shell';
+          case 'reference': return 'outline';
+
+          default:
+            return 'folder';
+        }
+      }
+
+      function toggle(key) {
+        return function(evt) {
+          var open = _this.state.open;
+          var index = open.indexOf(key);
+          
+          if(index === -1) {
+            open.push(key);
+          } else {
+            open.splice(index, 1);
+          }
+
+          _this.setState({
+            open: open
+          });
+          evt.preventDefault();
+        }
+      }
+
+      function walk(node, indent) {
+        var isOpen = _this.state.open.indexOf(node.key) !== -1;
+
+        items.push({
+          name: node.name,
+          type: node.type,
+          key: node.key,
+          hasChildren: node.children.length > 0,
+          indent: indent,
+          open: isOpen,
+          icon: getIcon(node.type, indent)
+        });
+
+        if(isOpen) {
+          node.children.forEach(function(child) {
+            walk(child, indent + 1);
+          });
+        }
+      }
+
+      if(this.props.content) {
+        walk(this.props.content, 0);
+      }
+
+      return (
+        <table className="miniNavTreeTable">
+          <tbody>
+            {items.map(function(item) {
+              var arrowClass = 'modelDecorationSprite ' + (item.open ? 'core-sprite-openarrow' : 'core-sprite-closedarrow');
+
+              return (
+                <tr className="navRow treeTableRow selectableNavRow" key={item.key}>
+                  <td className="navColumn" style={{paddingLeft: (item.indent * 16) + 'px'}}>
+                    <span className="mainNavColumn">
+                      <span className={arrowClass} style={{visibility: item.hasChildren ? 'visible' : 'hidden'}} onClick={toggle(item.key)} />
+                      <span className={'modelDecorationSprite core-sprite-' + item.icon} />
+                      <a className="navlinkonpage commonNavFolder" href="#">{item.name}</a>
+                    </span>
+                  </td>
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
+      );
+    }
+  });
+
+  var Sidebar = React.createClass({
+    render: function() {
+      return (
+        <div className="dropdownTrigger toolbarTarget toolbarTarget-toolbarHidden selectionModelContainer dropdownTriggerOpen">
+          <div>
+            <FileTree content={(this.props.workspace || {}).content} />
+          </div>
+        </div>
+      );
+    }
+  });
+
   var PageContent = React.createClass({
     render: function() {
       function navigate(path) {
@@ -229,6 +338,9 @@ define(['require', 'exports', 'react', 'app'], function(require, exports, React,
               </SubMenuItem>
             </MenuItem>
           </Menu>
+          <div className="innerPanels">
+            <Sidebar workspace={this.props.workspace} />
+          </div>
         </div>
       );
     }
@@ -251,7 +363,7 @@ define(['require', 'exports', 'react', 'app'], function(require, exports, React,
         <div style={{width: '100%', height: '100%', margin: 0, padding: 0}}>
           <Header />
           <SideMenu />
-          <PageContent menu={this.state.menu} />
+          <PageContent menu={this.state.menu} workspace={this.state.workspace} />
           {extra}
         </div>
       );
