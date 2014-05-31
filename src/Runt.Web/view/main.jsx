@@ -272,7 +272,22 @@ define(['require', 'exports', 'react', 'app'], function(require, exports, React,
     }
   });
 
+  var Editor = React.createClass({
+    render: function() {
+      return (
+        <div className="workingTarget" />
+      );
+    }
+  });
+
   var PageContent = React.createClass({
+    getInitialState: function() {
+      return {
+        open: true,
+        sidebarWidth: 308
+      };
+    },
+
     render: function() {
       function navigate(path) {
         return function(evt) {
@@ -301,7 +316,17 @@ define(['require', 'exports', 'react', 'app'], function(require, exports, React,
             </MenuItem>
           </Menu>
           <div className="innerPanels">
-            <Sidebar workspace={this.props.workspace} />
+            <div className="auxpane sidePanelLayout hasSplit" style={{width: this.state.sidebarWidth + 'px', display: 'block'}}>
+              <Sidebar workspace={this.props.workspace} />
+            </div>
+            <div className="split splitLayout" style={{left: this.state.sidebarWidth + 'px', visibility: 'visible'}}>
+              <div className="splitThumb splitThumbLayout" />
+            </div>
+            <div className="mainpane mainPanelLayout hasSplit" style={{left: (this.state.sidebarWidth + 10) + 'px', display: 'block'}}>
+              <div className="fixedToolbarHolder">
+                <Editor />
+              </div>
+            </div>
           </div>
         </div>
       );
