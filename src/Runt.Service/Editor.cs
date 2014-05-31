@@ -139,6 +139,9 @@ namespace Runt.Service
         Entry UpdateNodeImpl<TNodeType>(Entry entry, string relPath, Func<TNodeType, JObject, TNodeType> update, JObject c)
             where TNodeType : Entry
         {
+            if (relPath == string.Empty)
+                return update((TNodeType)entry, c);
+
             var subChange = new JObject();
             Entry newEntry;
             for (int i = 0, l = entry.Children.Count; i < l; i++)
@@ -149,6 +152,16 @@ namespace Runt.Service
                     // found the node. Update and recurse back
                     TNodeType n = (TNodeType)child;
                     newEntry = update(n, subChange);
+
+                    if(!newEntry.IsOpen && subChange.Property("children") != null)
+                    {
+                        var childrenUpdate = subChange.Property("children").Value;
+                        if (childrenUpdate is JArray)
+                            ((JArray)childrenUpdate).Clear();
+                        else
+                            ((JObject)childrenUpdate).RemoveAll();
+                    }
+
                     return entry.WithChild(i, newEntry, c, subChange);
 
                 }
@@ -156,6 +169,8 @@ namespace Runt.Service
                 {
                     // found a parent of the node in question, recurse downwards
                     newEntry = UpdateNodeImpl(child, relPath, update, subChange);
+                    if (!child.IsOpen)
+                        subChange = new JObject();
                     return entry.WithChild(i, newEntry, c, subChange);
                 }
             }
@@ -211,6 +226,12 @@ namespace Runt.Service
             _host.Connected += HostConnected;
             _host.References += HostReferences;
             _host.Start(Kvm.GetRuntime("default"));
+        }
+
+        [Command("tree:node::toggle")]
+        public void TogleNode(string rel)
+        {
+            UpdateNode<Entry>(rel, (e, c) => e.AsOpen(!e.IsOpen, c));
         }
 
         private void HostReferences(object sender, ReferencesEventArgs e)

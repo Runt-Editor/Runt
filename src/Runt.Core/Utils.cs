@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq.Expressions;
 using System.Reflection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Runt.Core.Model.FileTree;
 
 namespace Runt.Core
 {
@@ -26,9 +28,15 @@ namespace Runt.Core
             Contract.Requires(change != null);
             Contract.Requires(property != null);
 
-            var subChange = partials ?? (newVal == null ? null : JObject.FromObject(newVal));
+            JToken subChange;
+            if (typeof(T) == typeof(bool))
+                subChange = new JValue((bool)(object)newVal);
+            else if (newVal is IEnumerable<Entry>)
+                subChange = JArray.FromObject(newVal);
+            else
+                subChange = partials ?? (newVal == null ? null : JObject.FromObject(newVal));
             if (change.Property(property) != null)
-                Merge((JObject)change.Property(property).Value, subChange);
+                Merge((JObject)change.Property(property).Value, (JObject)subChange);
             else
                 change.Add(new JProperty(property, subChange));
         }
@@ -45,7 +53,7 @@ namespace Runt.Core
             }
         }
 
-        static string NameOf<T>(Expression<Func<T>> property)
+        internal static string NameOf<T>(Expression<Func<T>> property)
         {
             var member = GetMemberInfo(property);
             if (member.GetCustomAttribute<JsonIgnoreAttribute>() != null)

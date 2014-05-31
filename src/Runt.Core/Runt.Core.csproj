@@ -46,6 +46,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="EntryJsonConverter.cs" />
     <Compile Include="EventArgs\ConfigurationsEventArgs.cs" />
     <Compile Include="EventArgs\ProjectEventArgs.cs" />
     <Compile Include="EventArgs\ReferencesEventArgs.cs" />

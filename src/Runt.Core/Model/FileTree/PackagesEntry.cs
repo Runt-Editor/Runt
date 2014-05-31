@@ -7,8 +7,8 @@ namespace Runt.Core.Model.FileTree
 {
     class PackagesEntry : DirectoryEntry
     {
-        protected PackagesEntry(DirectoryInfo dir, ImmutableList<DirectoryEntry> directories)
-            : base("packages", dir, directories, ImmutableList.Create<Entry>())
+        protected PackagesEntry(bool isOpen, DirectoryInfo dir, ImmutableList<DirectoryEntry> directories)
+            : base("packages", isOpen, dir, directories, ImmutableList.Create<Entry>())
         {
 
         }
@@ -18,10 +18,16 @@ namespace Runt.Core.Model.FileTree
             throw new InvalidOperationException("Cannot set children on package directories");
         }
 
+        public override Entry AsOpen(bool open, JObject c)
+        {
+            RegisterOpenChange(open, c);
+            return new PackagesEntry(open, _dir, _directories);
+        }
+
         public static PackagesEntry Create(DirectoryInfo dir)
         {
             // TODO: Implement
-            return new PackagesEntry(dir, ImmutableList.Create<DirectoryEntry>());
+            return new PackagesEntry(false, dir, ImmutableList.Create<DirectoryEntry>());
         }
 
         public override string Type

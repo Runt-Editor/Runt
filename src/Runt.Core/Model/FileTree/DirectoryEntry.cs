@@ -14,8 +14,8 @@ namespace Runt.Core.Model.FileTree
         protected readonly ImmutableList<Entry> _files;
         protected readonly Lazy<IReadOnlyList<Entry>> _children;
 
-        protected DirectoryEntry(string rel, DirectoryInfo dir, ImmutableList<DirectoryEntry> directories, ImmutableList<Entry> files)
-            : base(rel)
+        protected DirectoryEntry(string rel, bool isOpen, DirectoryInfo dir, ImmutableList<DirectoryEntry> directories, ImmutableList<Entry> files)
+            : base(rel, isOpen)
         {
             _dir = dir;
             _directories = directories;
@@ -39,7 +39,7 @@ namespace Runt.Core.Model.FileTree
 
             var dirs = ImmutableList.CreateBuilder<DirectoryEntry>();
             var projects = ImmutableList.CreateBuilder<ProjectEntry>();
-            foreach(var dap in dirsAndProjects)
+            foreach (var dap in dirsAndProjects)
             {
                 if (dap.Item2 != null)
                     projects.AddRange(dap.Item2);
@@ -52,15 +52,21 @@ namespace Runt.Core.Model.FileTree
                         select (Entry)FileEntry.Create(f, Path.Combine(relativePath, f.Name));
 
             return new Tuple<DirectoryEntry, ImmutableList<ProjectEntry>>(
-                new DirectoryEntry(relativePath, dir,
+                new DirectoryEntry(relativePath, false, dir,
                     dirs.ToImmutable(), files.ToImmutableList()),
                 projects.ToImmutable());
+        }
+
+        public override Entry AsOpen(bool open, JObject c)
+        {
+            RegisterOpenChange(open, c);
+            return new DirectoryEntry(RelativePath, open, _dir, _directories, _files);
         }
 
         public override Entry WithChild(int index, Entry child, JObject changes, JObject subChange)
         {
             var lists = ChangeIndex(index, child, changes, subChange);
-            return new DirectoryEntry(RelativePath, _dir, lists.Item1, lists.Item2);
+            return new DirectoryEntry(RelativePath, IsOpen, _dir, lists.Item1, lists.Item2);
         }
 
         protected Tuple<ImmutableList<DirectoryEntry>, ImmutableList<Entry>> ChangeIndex(
@@ -98,11 +104,6 @@ namespace Runt.Core.Model.FileTree
         public override string Type
         {
             get { return "dir"; }
-        }
-
-        public override string Key
-        {
-            get { return Type + ":" + _dir.FullName; }
         }
     }
 }

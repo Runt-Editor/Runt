@@ -202,22 +202,6 @@ define(['require', 'exports', 'react', 'app'], function(require, exports, React,
   });
 
   var FileTree = React.createClass({
-    getInitialState: function() {
-      return {
-        open: [],
-        global: null
-      };
-    },
-
-    componentWillReceiveProps: function(newProps) {
-      if(newProps.content && newProps.content.key && newProps.content.key !== this.state.global) {
-        this.setState({
-          open: [newProps.content.key],
-          workspace: newProps.content.key
-        });
-      }
-    },
-
     render: function() {
       var _this = this;
       var items = [];
@@ -232,42 +216,20 @@ define(['require', 'exports', 'react', 'app'], function(require, exports, React,
         }
       }
 
-      function toggle(key) {
-        return function(evt) {
-          var open = _this.state.open;
-          var index = open.indexOf(key);
-          
-          if(index === -1) {
-            open.push(key);
-          } else {
-            open.splice(index, 1);
-          }
-
-          _this.setState({
-            open: open
-          });
-          evt.preventDefault();
-        }
-      }
-
       function walk(node, indent) {
-        var isOpen = _this.state.open.indexOf(node.key) !== -1;
-
         items.push({
           name: node.name,
           type: node.type,
           key: node.key,
-          hasChildren: node.children.length > 0,
+          hasChildren: node['has-children'],
           indent: indent,
-          open: isOpen,
+          open: node.open,
           icon: getIcon(node.type, indent)
         });
 
-        if(isOpen) {
-          node.children.forEach(function(child) {
-            walk(child, indent + 1);
-          });
-        }
+        node.children.forEach(function(child) {
+          walk(child, indent + 1);
+        });
       }
 
       if(this.props.content) {
@@ -284,7 +246,7 @@ define(['require', 'exports', 'react', 'app'], function(require, exports, React,
                 <tr className="navRow treeTableRow selectableNavRow" key={item.key}>
                   <td className="navColumn" style={{paddingLeft: (item.indent * 16) + 'px'}}>
                     <span className="mainNavColumn">
-                      <span className={arrowClass} style={{visibility: item.hasChildren ? 'visible' : 'hidden'}} onClick={toggle(item.key)} />
+                      <span className={arrowClass} style={{visibility: item.hasChildren ? 'visible' : 'hidden'}} onClick={app.fnInvoke('tree:node::toggle', item.key)} />
                       <span className={'modelDecorationSprite core-sprite-' + item.icon} />
                       <a className="navlinkonpage commonNavFolder" href="#">{item.name}</a>
                     </span>

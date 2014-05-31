@@ -13,8 +13,8 @@ namespace Runt.Core.Model.FileTree
         readonly bool _unresolved;
         readonly ImmutableList<ReferenceEntry> _dependencies;
 
-        public ReferenceEntry(string name, string version, bool unresolved, ImmutableList<ReferenceEntry> dependencies)
-            : base(null)
+        public ReferenceEntry(string rel, bool isOpen, string name, string version, bool unresolved, ImmutableList<ReferenceEntry> dependencies)
+            : base(rel, isOpen)
         {
             _name = name;
             _version = version;
@@ -22,9 +22,10 @@ namespace Runt.Core.Model.FileTree
             _dependencies = dependencies;
         }
 
-        public override string Key
+        public override Entry AsOpen(bool open, JObject changes)
         {
-            get { return "reference:" + _name + ":" + _version; }
+            RegisterOpenChange(open, changes);
+            return new ReferenceEntry(RelativePath, open, _name, _version, _unresolved, _dependencies);
         }
 
         public override string Name
@@ -50,7 +51,13 @@ namespace Runt.Core.Model.FileTree
 
         public override Entry WithChild(int index, Entry child, JObject changes, JObject subChange)
         {
-            throw new InvalidOperationException("Cannot set children on a reference node");
+            var indexChange = new JObject();
+            Utils.RegisterChange(indexChange, "0", child, subChange);
+
+            // Note: I use null here because I don't want to create the lists.
+            // given that indexChange will never be null, this is safe.
+            Utils.RegisterChange(changes, () => Children, null, indexChange);
+            return new ReferenceEntry(RelativePath, IsOpen, _name, _version, _unresolved, _dependencies.SetItem(index, (ReferenceEntry)child));
         }
     }
 }

@@ -11,20 +11,26 @@ namespace Runt.Core.Model.FileTree
     {
         readonly FileInfo _file;
 
-        public FileEntry(string rel, FileInfo file)
-            : base(rel)
+        public FileEntry(string rel, bool isOpen, FileInfo file)
+            : base(rel, isOpen)
         {
             _file = file;
         }
 
         public static FileEntry Create(FileInfo file, string relativePath)
         {
-            return new FileEntry(Path.Combine(relativePath, file.Name), file);
+            return new FileEntry(relativePath, false, file);
         }
 
         public override sealed Entry WithChild(int index, Entry child, JObject changes, JObject subChange)
         {
             throw new InvalidOperationException("Cannot set children on files");
+        }
+
+        public override Entry AsOpen(bool open, JObject changes)
+        {
+            RegisterOpenChange(open, changes);
+            return new FileEntry(RelativePath, open, _file);
         }
 
         public override string Name
@@ -40,11 +46,6 @@ namespace Runt.Core.Model.FileTree
         public override string Type
         {
             get { return "file"; }
-        }
-
-        public override string Key
-        {
-            get { return Type + ":" + _file.FullName; }
         }
     }
 }

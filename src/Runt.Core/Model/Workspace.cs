@@ -49,7 +49,7 @@ namespace Runt.Core.Model
         {
             var dir = new DirectoryInfo(path);
             var tree = DirectoryEntry.Create(dir, string.Empty);
-            return new Workspace(new DirectoryInfo(path), tree.Item1, tree.Item2.Select(p => p.RelativePath).ToImmutableList());
+            return new Workspace(new DirectoryInfo(path), tree.Item1.AsOpen(true, new JObject()), tree.Item2.Select(p => p.RelativePath).ToImmutableList());
         }
 
         public Workspace WithContent(Entry content, JObject changes, JObject partials)
