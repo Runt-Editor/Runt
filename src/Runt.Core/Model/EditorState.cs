@@ -21,6 +21,12 @@ namespace Runt.Core.Model
             return new EditorState(_workspace, dialog);
         }
 
+        public EditorState WithWorkspace(Workspace workspace)
+        {
+            // Setting workspace allways clears out the current dialog (and basically anything else)
+            return new EditorState(workspace, null);
+        }
+
         [JsonProperty("workspace")]
         public Workspace Workspace
         {

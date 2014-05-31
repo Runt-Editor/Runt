@@ -9,6 +9,5 @@
     },
     "configurations":  {
         "net45":  {}
-    },
-    "resources":  ["index.html", "js/**"]
+    }
 }

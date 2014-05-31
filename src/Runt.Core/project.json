@@ -3,6 +3,10 @@
     "authors":  ["Alxandr"],
     "version":  "0.1-alpha-*",
     "dependencies":  {
-        "Newtonsoft.Json": "5.0.8"
+        "Newtonsoft.Json": "5.0.8",
+        "Microsoft.Bcl.Immutable":  "1.1.22-beta"
+    },
+    "configurations":  {
+        "net45":  {}
     }
 }

@@ -120,3 +120,4 @@ define(["require", "exports"], function(require, exports) {
     })();
     exports.DefaultClient = DefaultClient;
 });
+//# sourceMappingURL=http.js.map

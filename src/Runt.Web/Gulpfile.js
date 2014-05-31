@@ -33,13 +33,18 @@ gulp.task('rjs', ['build-ts', 'build-view'], function() {
   }).pipe(gulp.dest('dist'));
 });
 
+gulp.task('rconf', ['build-ts'], function() {
+  gulp.src('js/conf.js')
+    .pipe(gulp.dest('dist'));
+});
+
 gulp.task('css', function() {
   return gulp.src('style/app.stylus')
     .pipe(stylus())
     .pipe(gulp.dest('dist'));
 });
 
-gulp.task('build', ['rjs', 'css']);
+gulp.task('build', ['rjs', 'css', 'rconf']);
 
 gulp.task('watch', function() {
   watch({glob: 'ts/**/*.ts'})

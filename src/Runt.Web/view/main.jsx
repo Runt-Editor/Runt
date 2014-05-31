@@ -50,6 +50,7 @@ define(['require', 'exports', 'react', 'app'], function(require, exports, React,
                 {children}
               </tbody>
             </table>
+            <button type="button" onClick={app.fnInvoke('dialog:browse-project::select', this.props.path)}>Select</button>
           </div>
         );
       }
@@ -109,15 +110,129 @@ define(['require', 'exports', 'react', 'app'], function(require, exports, React,
         <div className="dialog dialogShowing" style={{top: 0, left: '672.5px'}}>
           <div className="dialogTitle">
             <span className="dialogTitleText layoutLeft">{this.props.title}</span>
-            <button className="dismissButton layoutRight core-sprite-close imageSprite"></button>
+            <button className="dismissButton layoutRight core-sprite-close imageSprite" onClick={this.cancel}></button>
           </div>
           <div className="dialogContent layoutBlock" style={{width: '500px', overflow: 'auto', maxHeight: '400px'}}>
             {React.Children.only(this.props.children)}
           </div>
         </div>
       );
+    },
+
+    cancel: function() {
+      app.cancelDialog();
     }
-  })
+  });
+
+  var MenuItem = React.createClass({
+    render: function() {
+      var className = 'dropdownTrigger orionButton commandButton';
+      var ulClassName = 'dropdownMenu';
+      if(this.props.open) {
+        className += ' dropdownTriggerOpen dropdownSelection';
+        ulClassName += ' dropdownMenuOpen';
+      }
+
+      return (
+        <ul className="commandList layoutLeft pageActions">
+          <li>
+            {this.transferPropsTo(<button className={className}>{this.props.name}</button>)}
+            <ul className={ulClassName}>
+              {this.props.children}
+            </ul>
+          </li>
+        </ul>
+      );
+    }
+  });
+
+  var SubMenuItem = React.createClass({
+    render: function() {
+      return this.props.children ? this.renderWithChildren() : this.renderSimple();
+    },
+
+    renderWithChildren: function() {
+      return (
+        <li className="dropdownSubMenu">
+          {this.transferPropsTo(
+            <span className="dropdownTrigger dropdownMenuItem">
+              <span className="dropdownCommandName">{this.props.name}</span>
+              <span className="dropdownArrowRight core-sprite-closedarrow" />
+            </span>
+          )}
+          <ul className="dropdownMenu">
+            {this.props.children}
+          </ul>
+        </li>
+      );
+    },
+
+    renderSimple: function() {
+      return (
+        <li>
+          {this.transferPropsTo(
+            <span className="dropdownMenuItem">
+              <span className="dropdownCommandName">{this.props.name}</span>
+              <span className="dropdownKeyBinding">{this.props.binding}</span>
+            </span>
+          )}
+        </li>
+      );
+    }
+  });
+
+  var MenuSeparator = React.createClass({
+    render: function() {
+      return (
+        <li className="dropdownSeparator">
+          <span className="dropdownSeparator" />
+        </li>
+      );
+    }
+  });
+
+  var Menu = React.createClass({
+    render: function() {
+      return (
+        <div className="mainToolbar toolComposite toolbarLayout">
+          {this.props.children}
+        </div>
+      )
+    }
+  });
+
+  var PageContent = React.createClass({
+    render: function() {
+      function navigate(path) {
+        return function(evt) {
+          app.browseProject(path);
+          evt.preventDefault();
+        };
+      }
+
+      function menu(name) {
+        return function(evt) {
+          app.toggleMenu(name);
+          evt.stopPropagation();
+        };
+      }
+
+      return (
+        <div className="content-fixedHeight" style={{left: '40px'}}>
+          <div className="sideMenuToggle"></div>
+          <Menu>
+            <MenuItem name="File" open={this.props.menu.open === 'file'} onClick={menu('file')}>
+              <SubMenuItem name="Open Project" binding="Ctrl+O" onClick={navigate(null)} />
+              <MenuSeparator />
+              <SubMenuItem name="New">
+                <SubMenuItem name="File" binding="Ctrl+N" />
+              </SubMenuItem>
+            </MenuItem>
+          </Menu>
+        </div>
+      );
+    }
+  });
 
   var Main = React.createClass({
     render: function() {
@@ -132,16 +247,23 @@ define(['require', 'exports', 'react', 'app'], function(require, exports, React,
         }
       }
 
-      return (
+      return this.transferPropsTo(
         <div style={{width: '100%', height: '100%', margin: 0, padding: 0}}>
           <Header />
           <SideMenu />
+          <PageContent menu={this.state.menu} />
           {extra}
         </div>
       );
     },
 
-    getInitialState: function() { return {}; }
+    getInitialState: function() { 
+      return {
+        menu: {
+          open: null
+        }
+      };
+    }
   });
   exports.Main = Main;
 });

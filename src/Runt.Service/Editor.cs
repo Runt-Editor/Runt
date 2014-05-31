@@ -87,16 +87,35 @@ namespace Runt.Service
             Send(Messages.State(newState));
         }
 
-        [Command("browse-project")]
+        [Command("dialog::cancel")]
+        public void CancelDialog()
+        {
+            Update(Utils.Update((EditorState s) => s.WithDialog(null)));
+        }
+
+        [Command("dialog:browse-project::open")]
         public void BrowseProject()
         {
             Update(Utils.Update((EditorState s) => s.WithDialog(Dialog.Browse())));
         }
 
-        [Command("browse-project")]
+        [Command("dialog:browse-project::open")]
         public void BrowseProject(string path)
         {
             Update(Utils.Update((EditorState s) => s.WithDialog(Dialog.Browse(path))));
+        }
+
+        [Command("dialog:browse-project::select")]
+        public void OpenProject(string path)
+        {
+            Update(Utils.Update((EditorState s) =>
+                s.WithDialog(null).WithWorkspace(Workspace.Create(path, change =>
+                {
+                    Update(Utils.Update((EditorState s2) =>
+                        s2.WithWorkspace(Utils.Update(change)(s.Workspace))
+                    ));
+                }))
+            ));
         }
     }
 }

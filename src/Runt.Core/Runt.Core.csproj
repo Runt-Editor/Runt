@@ -35,6 +35,9 @@
       <HintPath>..\..\packages\Newtonsoft.Json.5.0.8\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Collections.Immutable">
+      <HintPath>..\..\packages\Microsoft.Bcl.Immutable.1.1.22-beta\lib\portable-net45+win8+wpa81\System.Collections.Immutable.dll</HintPath>
+    </Reference>
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -43,15 +46,21 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="IOExtensions.cs" />
+    <Compile Include="Model\FileTree\DirectoryEntry.cs" />
     <Compile Include="Model\EditorState.cs" />
     <Compile Include="IClientConnection.cs" />
     <Compile Include="IEditor.cs" />
     <Compile Include="ILanguageService.cs" />
     <Compile Include="Message.cs" />
+    <Compile Include="Model\FileTree\Entry.cs" />
+    <Compile Include="Model\FileTree\FileEntry.cs" />
+    <Compile Include="Model\FileTree\PackagesEntry.cs" />
     <Compile Include="Model\Workspace.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="packages.config" />
     <None Include="project.json" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -5,11 +5,7 @@ import React = require('react');
 import view = require('./view/main');
 
 var connection = new conn.Connection(window.location.protocol + '//' + window.location.host + '/io');
-connection.start().then(() => {
-    window.setTimeout(() => {
-        invoke('browse-project');
-    }, 500);
-});
+connection.start();
 connection.received.on(message => {
     try {
         var msg = JSON.parse(message);
@@ -46,7 +42,17 @@ function merge(obj: any, diff: any) {
     return obj;
 }
 
-var component = React.renderComponent(view.Main(), document.body);
+var component = React.renderComponent(view.Main({
+    onClick: function (evt) {
+        if (component.state.menu.open !== null) {
+            component.setState({
+                menu: {
+                    open: null
+                }
+            });
+        }
+    }
+}), document.body);
 
 function updateState(diff: any): void {
     state = diff;
@@ -61,6 +67,25 @@ function invoke(name, ...args): void {
     }));
 }
 
+export function fnInvoke(name, ...args): (evt: any) => void {
+    return (evt: any) => {
+        invoke.apply(null, [name].concat(args));
+    };
+}
+
+export function cancelDialog(): void {
+    invoke('dialog::cancel');
+}
+
 export function browseProject(path: string): void {
-    invoke('browse-project', path);
+    invoke('dialog:browse-project::open', path);
+}
+
+export function toggleMenu(name: string): void {
+    name = component.state.menu.open === name ? null : name;
+    component.setState({
+        menu: {
+            open: name
+        }
+    });
 }

@@ -598,3 +598,4 @@ define(["require", "exports", './keepalivedata', './transport', './http', './uti
     })(exports.Utils || (exports.Utils = {}));
     var Utils = exports.Utils;
 });
+//# sourceMappingURL=connection.js.map
