@@ -52,7 +52,7 @@ namespace Runt.Core.Model.FileTree
         public override Entry WithChild(int index, Entry child, JObject changes, JObject subChange)
         {
             var indexChange = new JObject();
-            Utils.RegisterChange(indexChange, "0", child, subChange);
+            Utils.RegisterChange(indexChange, index.ToString(), child, subChange);
 
             // Note: I use null here because I don't want to create the lists.
             // given that indexChange will never be null, this is safe.

@@ -1,6 +1,6 @@
 ﻿/** @jsx React.DOM */
 
-define(['require', 'exports', 'react', 'app'], function(require, exports, React, app) {
+define(['require', 'exports', 'react', 'app', 'orion/editor/edit'], function(require, exports, React, app, edit) {
   var Dialogs = {
     browse: React.createClass({
       render: function() {
@@ -59,25 +59,34 @@ define(['require', 'exports', 'react', 'app'], function(require, exports, React,
 
   var Header = React.createClass({
     render: function() {
+      function navigate(path) {
+        return function(evt) {
+          app.browseProject(path);
+          evt.preventDefault();
+        };
+      }
+
+      function menu(name) {
+        return function(evt) {
+          app.toggleMenu(name);
+          evt.stopPropagation();
+        };
+      }
+      
       return this.transferPropsTo(
         <header>
-          <div className="layoutBlock topRowBanner">
-            <div style={{position: 'absolute', left: 0, top: 0, width: '39px', height: '36px', zIndex: 1, borderRight: '1px solid #ddd'}}></div>
-            <a className="layoutLeft" href="#"></a>
-            <nav className="bannerLeftArea" style={{zIndex: 2}}>
-              <button className="centralNavigation commandSprite core-sprite-hamburger" type="button"></button>
-            </nav>
-
-            <div className="clear navigationBreadcrumb bannerMiddleArea" style={{textAlign: 'center'}}>
-              <div className="currentLocation">
-                <span>Koff</span>
-              </div>
-
-              <div className="bannerRightArea" style={{zIndex: 2}}>
-                <div className="spacingLeft layoutLeft"></div>
-              </div>
-            </div>
-          </div>
+          <nav className="menu-toggle">
+            <button className="command-sprite core-sprite-hamburger" type="button"></button>
+          </nav>
+          <Menu>
+            <MenuItem name="File" open={this.props.menu.open === 'file'} onClick={menu('file')}>
+              <SubMenuItem name="Open Project" binding="Ctrl+O" onClick={navigate(null)} />
+              <MenuSeparator />
+              <SubMenuItem name="New">
+                <SubMenuItem name="File" binding="Ctrl+N" />
+              </SubMenuItem>
+            </MenuItem>
+          </Menu>
         </header>
       );
     }
@@ -86,20 +95,13 @@ define(['require', 'exports', 'react', 'app'], function(require, exports, React,
   var SideMenu = React.createClass({
     render: function() {
       return this.transferPropsTo(
-        <div className="sideMenu" style={{width: '40px'}}>
-          <ul className="sideMenuList">
-            <li className="sideMenuItem sideMenuItemActive">
-              <button type="button" className="core-sprite-edit submenu-trigger"></button>
-              <ul className="sideMenuSubMenu">
-                <li className="sideMenuSubMenuItem">
-                  <a className="sideMenuSubMenuItemLink" href="#">
-                    <span className="sideMenuSubMenuItemSpan">Show workspace</span>
-                  </a>
-                </li>
-              </ul>
+        <nav className="side-menu fixed-pane">
+          <ul>
+            <li className="active">
+              <button type="button" className="core-sprite-edit"></button>
             </li>
           </ul>
-        </div>
+        </nav>
       );
     }
   });
@@ -126,22 +128,20 @@ define(['require', 'exports', 'react', 'app'], function(require, exports, React,
 
   var MenuItem = React.createClass({
     render: function() {
-      var className = 'dropdownTrigger orionButton commandButton';
-      var ulClassName = 'dropdownMenu';
+      var className = '';
+      var ulClassName = 'dropdown-menu ';
       if(this.props.open) {
-        className += ' dropdownTriggerOpen dropdownSelection';
-        ulClassName += ' dropdownMenuOpen';
+        className = 'open';
+        ulClassName += 'open';
       }
 
       return (
-        <ul className="commandList layoutLeft pageActions">
-          <li>
-            {this.transferPropsTo(<button className={className}>{this.props.name}</button>)}
-            <ul className={ulClassName}>
-              {this.props.children}
-            </ul>
-          </li>
-        </ul>
+        <li>
+          {this.transferPropsTo(<button className={className}>{this.props.name}</button>)}
+          <ul className={ulClassName}>
+            {this.props.children}
+          </ul>
+        </li>
       );
     }
   });
@@ -153,14 +153,14 @@ define(['require', 'exports', 'react', 'app'], function(require, exports, React,
 
     renderWithChildren: function() {
       return (
-        <li className="dropdownSubMenu">
+        <li className="sub-menu">
           {this.transferPropsTo(
-            <span className="dropdownTrigger dropdownMenuItem">
-              <span className="dropdownCommandName">{this.props.name}</span>
-              <span className="dropdownArrowRight core-sprite-closedarrow" />
-            </span>
+            <div className="item">
+              <span className="name">{this.props.name}</span>
+              <span className="arrow core-sprite-closedarrow" />
+            </div>
           )}
-          <ul className="dropdownMenu">
+          <ul className="dropdown-menu">
             {this.props.children}
           </ul>
         </li>
@@ -171,10 +171,10 @@ define(['require', 'exports', 'react', 'app'], function(require, exports, React,
       return (
         <li>
           {this.transferPropsTo(
-            <span className="dropdownMenuItem">
-              <span className="dropdownCommandName">{this.props.name}</span>
-              <span className="dropdownKeyBinding">{this.props.binding}</span>
-            </span>
+            <div className="item">
+              <span className="name">{this.props.name}</span>
+              <span className="binding">{this.props.binding}</span>
+            </div>
           )}
         </li>
       );
@@ -184,8 +184,8 @@ define(['require', 'exports', 'react', 'app'], function(require, exports, React,
   var MenuSeparator = React.createClass({
     render: function() {
       return (
-        <li className="dropdownSeparator">
-          <span className="dropdownSeparator" />
+        <li className="separator">
+          <span />
         </li>
       );
     }
@@ -194,9 +194,9 @@ define(['require', 'exports', 'react', 'app'], function(require, exports, React,
   var Menu = React.createClass({
     render: function() {
       return (
-        <div className="mainToolbar toolComposite toolbarLayout">
+        <ul className="menu">
           {this.props.children}
-        </div>
+        </ul>
       )
     }
   });
@@ -217,15 +217,17 @@ define(['require', 'exports', 'react', 'app'], function(require, exports, React,
       }
 
       function walk(node, indent) {
-        items.push({
-          name: node.name,
-          type: node.type,
-          key: node.key,
-          hasChildren: node['has-children'],
-          indent: indent,
-          open: node.open,
-          icon: getIcon(node.type, indent)
-        });
+        if(indent > 0) {
+          items.push({
+            name: node.name,
+            type: node.type,
+            key: node.key,
+            hasChildren: node['has-children'],
+            indent: indent - 1,
+            open: node.open,
+            icon: getIcon(node.type, indent)
+          });
+        }
 
         node.children.forEach(function(child) {
           walk(child, indent + 1);
@@ -237,19 +239,17 @@ define(['require', 'exports', 'react', 'app'], function(require, exports, React,
       }
 
       return (
-        <table className="miniNavTreeTable">
+        <table className="file-tree">
           <tbody>
             {items.map(function(item) {
               var arrowClass = 'modelDecorationSprite ' + (item.open ? 'core-sprite-openarrow' : 'core-sprite-closedarrow');
 
               return (
-                <tr className="navRow treeTableRow selectableNavRow" key={item.key}>
-                  <td className="navColumn" style={{paddingLeft: (item.indent * 16) + 'px'}}>
-                    <span className="mainNavColumn">
-                      <span className={arrowClass} style={{visibility: item.hasChildren ? 'visible' : 'hidden'}} onClick={app.fnInvoke('tree:node::toggle', item.key)} />
-                      <span className={'modelDecorationSprite core-sprite-' + item.icon} />
-                      <a className="navlinkonpage commonNavFolder" href="#">{item.name}</a>
-                    </span>
+                <tr key={item.key}>
+                  <td style={{paddingLeft: (item.indent * 16) + 'px'}}>
+                    <span className={arrowClass} style={{visibility: item.hasChildren ? 'visible' : 'hidden'}} onClick={app.fnInvoke('tree:node::toggle', item.key)} />
+                    <span className={'core-sprite-' + item.icon} />
+                    <a href="#">{item.name}</a>
                   </td>
                 </tr>
               )
@@ -262,20 +262,51 @@ define(['require', 'exports', 'react', 'app'], function(require, exports, React,
 
   var Sidebar = React.createClass({
     render: function() {
-      return (
-        <div className="dropdownTrigger toolbarTarget toolbarTarget-toolbarHidden selectionModelContainer dropdownTriggerOpen">
-          <div>
-            <FileTree content={(this.props.workspace || {}).content} />
+      var content = [];
+      if(this.props.workspace && this.props.workspace.content) {
+        content = [
+          <div className="header">
+            {this.props.workspace.name}
+          </div>,
+          <div className="scroll-view">
+            <FileTree content={this.props.workspace.content} />
           </div>
+        ];
+      }
+
+      return (
+        <div className={'side-bar ' + this.props.className} style={{width: this.props.width + 'px'}}>
+          {content}
         </div>
       );
     }
   });
 
   var Editor = React.createClass({
+    getInitialState: function() {
+      return {editor: null};
+    },
+
+    componentDidMount: function() {
+      var node = this.getDOMNode();
+      // var editor = edit({
+      //   parent: node,
+      //   contentType: 'js',
+      //   expandTab: true,
+      //   title: 'Test'
+      // });
+    },
+
+    componentWillUnmount: function() {
+      this.state.editor.destroy();
+      this.setState({
+        editor: null
+      });
+    },
+
     render: function() {
       return (
-        <div className="workingTarget" />
+        <div className="content-area" />
       );
     }
   });
@@ -289,48 +320,50 @@ define(['require', 'exports', 'react', 'app'], function(require, exports, React,
     },
 
     render: function() {
-      function navigate(path) {
-        return function(evt) {
-          app.browseProject(path);
-          evt.preventDefault();
-        };
-      }
-
-      function menu(name) {
-        return function(evt) {
-          app.toggleMenu(name);
-          evt.stopPropagation();
-        };
-      }
-
       return (
-        <div className="content-fixedHeight" style={{left: '40px'}}>
-          <div className="sideMenuToggle"></div>
-          <Menu>
-            <MenuItem name="File" open={this.props.menu.open === 'file'} onClick={menu('file')}>
-              <SubMenuItem name="Open Project" binding="Ctrl+O" onClick={navigate(null)} />
-              <MenuSeparator />
-              <SubMenuItem name="New">
-                <SubMenuItem name="File" binding="Ctrl+N" />
-              </SubMenuItem>
-            </MenuItem>
-          </Menu>
-          <div className="innerPanels">
-            <div className="auxpane sidePanelLayout hasSplit" style={{width: this.state.sidebarWidth + 'px', display: 'block'}}>
-              <Sidebar workspace={this.props.workspace} />
-            </div>
-            <div className="split splitLayout" style={{left: this.state.sidebarWidth + 'px', visibility: 'visible'}}>
-              <div className="splitThumb splitThumbLayout" />
-            </div>
-            <div className="mainpane mainPanelLayout hasSplit" style={{left: (this.state.sidebarWidth + 10) + 'px', display: 'block'}}>
-              <div className="fixedToolbarHolder">
-                <Editor />
-              </div>
-            </div>
-          </div>
+        <div className="pane page-content">
+          <Editor />
         </div>
       );
     }
+  });
+
+  var PaneDragger = React.createClass({
+    render: function() {
+      return (
+        <div className="fixed-pane pane-dragger">
+          <div />
+        </div>
+      );
+    }
+  });
+
+  var LeftPane = React.createClass({
+    render: function() {
+      return (
+        <Sidebar workspace={this.props.workspace} className="fixed-pane" width={this.props.width} />
+      );
+    }
+  });
+
+  var Content = React.createClass({
+    getInitialState: function() {
+        return {
+          open: true,
+          sidebarWidth: 308
+        };
+      },
+
+      render: function() {
+        return (
+          <div className="content">
+            <SideMenu />
+            <LeftPane workspace={this.props.workspace} open={this.state.open} width={this.state.sidebarWidth} />
+            <PaneDragger open={this.state.open} width={this.state.sidebarWidth} />
+            <PageContent workspace={this.props.workspace} />
+          </div>
+        );
+      }
   });
 
   var Main = React.createClass({
@@ -347,10 +380,9 @@ define(['require', 'exports', 'react', 'app'], function(require, exports, React,
       }
 
       return this.transferPropsTo(
-        <div style={{width: '100%', height: '100%', margin: 0, padding: 0}}>
-          <Header />
-          <SideMenu />
-          <PageContent menu={this.state.menu} workspace={this.state.workspace} />
+        <div className="root">
+          <Header menu={this.state.menu} />
+          <Content workspace={this.state.workspace} />
           {extra}
         </div>
       );

@@ -1,0 +1,285 @@
+@require "vendor"
+@require "variables"
+@require "mixins"
+@require "font"
+@require "icons"
+
+html, body, .root
+  background-color: background-color
+  width: 100%
+  height: 100%
+  margin: 0
+  padding: 0
+  font-family: 'Lucida Sans Unicode', 'Lucida Grande', Verdana, Arial, Helvetica, Myriad, Tahoma, clean, sans-serif
+  font-size: 12px
+
+.root
+  display: flex
+  flex-direction: column
+
+// Top row/navigation banner
+header
+  margin: 0
+  padding: 0
+  border: 0
+  background-color: header-background-color
+  height: 36px
+  white-space: nowrap
+  border-bottom: 1px solid header-border-color
+  flex: none
+  display: flex
+  flex-direction: row
+
+  > nav.menu-toggle
+    flex: none
+    width: 40px
+    border-right: 1px solid header-border-color
+    
+    button
+      pointer()
+      position: relative
+      top: 10px
+      left: 10px
+
+  > ul.menu
+    list-style: none
+    margin: 0
+    padding: 0
+    margin-left: 5px
+
+    > li
+      display: inline-block
+
+      > button
+        color: #222
+        border: 1px solid transparent
+        background-color: transparent
+        border-radius: 2px
+        vertical-align: middle
+        margin-top: 10px
+        outline: none
+        position: relative
+
+        &:hover
+          border-color: #ccc
+
+        &.open
+          background-color: white !important
+          border-color: #bbbbbb !important
+          border-bottom: none
+          border-bottom-left-radius: 0
+          border-bottom-right-radius: 0
+          box-shadow: -1px -1px 2px 0 rgba(0, 0, 0, .2)
+          z-index: 3
+
+
+ul.dropdown-menu
+  position: absolute
+  z-index: 2
+  display: none
+  box-shadow: 2px 2px 5px 3px rgba(0, 0, 0, .2)
+  color: #555
+  background-color: white
+  border-collapse: separate
+  border: 1px solid #bbbbbb
+  border-radius: 1px
+  list-style-type: none
+  line-height: normal
+  margin: 0
+  margin-left: 2px
+  margin-top: -3px
+  cursor: default
+  font-size: 12px
+  outline: none
+  padding: 3px 0 3px
+
+  &.open
+    display: block
+    min-width: 120px
+
+  > li
+    min-width: 120px
+    display: flex
+
+    &.separator
+      height: 1px
+      background-color: #ddd
+      color: #ddd
+      padding: 0 !important
+      margin: 0
+
+    > ul
+      margin-left: -2px
+
+    div.item
+      width: 100%
+      vertical-align: middle
+      color: #555 !important
+      padding: 3px 3px 3px 5px
+      cursor: pointer
+      border-left: 6px solid transparent
+
+      span.name
+        float: left
+
+      span.binding
+        float: right
+        color: grey !important
+        font-size: 11px
+        padding-left: 15px
+        padding-right: 10px
+
+      span.arrow
+        float: right
+        font-size: 12px
+
+    &:hover
+      > div.item
+        background-color: #feefde
+        border-left-color: #f58b0f
+
+      > ul
+        display: block
+
+
+// content
+div.content
+  display: flex
+  flex-direction: row
+  background-color: rgb(238, 238, 238)
+  height: 100%
+
+  > div
+    max-height: 100%
+    overflow: auto
+
+  > .pane
+    flex: 1 1 100%
+
+  > .fixed-pane
+    flex: none
+
+  > .pane-dragger
+    width: 10px
+    margin-right: 3px
+    cursor: e-resize
+    overflow: hidden
+    position: relative
+
+    > div // thumb
+      pointer()
+      background: #ccc
+      position: absolute
+      right: 0
+      height: 3em
+      width: 5px
+      top: 49%
+      border-top-left-radius: 5px
+      border-bottom-left-radius: 5px
+
+// side menu
+nav.side-menu
+  width: 40px
+  background-color: #4a4a4a
+  margin: 0
+  font-size: 10px
+  text-decoration: none !important
+  border-right: 1px solid #ccc
+
+  ul
+    margin: 0
+    padding: 0
+    display: inline-block !important
+    width: 100%
+    text-align: center
+
+    li
+      list-style: none
+      font-size: 16px !important
+      padding: 0
+
+      button
+        pointer()
+        color: #bbb !important
+        text-decoration: none !important
+        width: 100%
+        display: inline-block
+        padding: 9px 0px 12px 0px
+
+      &.active
+        background: radial-gradient(circle 20px, #3a3a3a, #333)
+        border-top: 1px solid #555
+        border-bottom: 1px solid #666
+
+        button
+          color: white !important
+
+// side bar
+.side-bar
+  display: flex
+  flex-direction: column
+
+  .header
+    height: 36px
+    font-weight: bold
+    margin-left: 10px
+    margin-top: 8px
+    white-space: nowrap
+    overflow: hidden
+    text-overflow: ellipses
+    color: #555
+
+// page-content
+.page-content
+  display: flex
+  flex-direction: column
+
+// content area
+.content-area
+  overflow: auto
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.33)
+  margin: 20px
+  background: white
+  flex: 1 1 100%
+
+.scroll-view
+  flex: 1 1 100%
+  overflow: auto
+
+
+// file tree
+table.file-tree
+  border-spacing: 0
+  width: 100%
+
+  > tbody > tr
+    vertical-align: baseline
+    border-spacing: 8px
+
+    &:hover, &.selected
+      background-color: #cedce7 !important
+
+      > td
+        border-left-color: #7fa4c0
+
+    > td
+      border-left: 6px solid transparent
+      padding: 4px
+
+      > a
+        outline: none
+        text-decoration: none
+        display: inline-block
+        padding: 2px
+        color: rgb(51, 51, 51)
+        vertical-align: bottom
+
+
+// links
+a, .link
+  text-decoration: none
+  color: link-color
+
+  &:hover
+    pointer()
+    text-decoration: underline

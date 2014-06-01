@@ -1,0 +1,3 @@
+[submodule "src/Runt.Web/lib/orion.client"]
+	path = src/Runt.Web/lib/orion.client
+	url = https://github.com/eclipse/orion.client.git
