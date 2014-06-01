@@ -1,6 +1,6 @@
 ﻿/** @jsx React.DOM */
 
-define(['require', 'exports', 'react', 'app', 'orion/editor/edit'], function(require, exports, React, app, edit) {
+define(['require', 'exports', 'react', '../app', 'orion/editor/edit'], function(require, exports, React, app, edit) {
   var Dialogs = {
     browse: React.createClass({
       render: function() {

@@ -164,7 +164,7 @@ namespace Runt.Core.Model.FileTree
 
             public override string Name
             {
-                get { return "references"; }
+                get { return "References"; }
             }
 
             public override string Type
