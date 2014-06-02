@@ -9,20 +9,27 @@ using System.IO;
 using Runt.DesignTimeHost;
 using Runt.Core.Model.FileTree;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
+using System.Threading.Tasks;
+using System.Text;
+using Runt.Service.Highlighting;
 
 namespace Runt.Service
 {
     public class Editor : IEditor
     {
+        private ConcurrentDictionary<string, Content> _contentDictionary = new ConcurrentDictionary<string, Content>();
         private EditorState _state = EditorState.Null;
         private FileSystemWatcher _watcher;
         private Host _host;
         private int _nextId;
+        private int _nextUpdate = 0;
 
         public IClientConnection ClientConnection { get; set; }
 
         public void NotifyConnected()
         {
+            _nextUpdate = 0;
             Send(Messages.State(_state));
         }
 
@@ -198,18 +205,33 @@ namespace Runt.Service
 
         Content GetContent(string contentId, bool read)
         {
+            Content result;
+            if (!read)
+            {
+                if (_contentDictionary.TryGetValue(contentId, out result))
+                    return result;
+            }
+
             var parts = contentId.Split(new[] { ':' }, 2);
             var type = parts[0];
             var name = parts[1];
 
-            switch (type)
+            Func<Content> get = () =>
             {
-                case "edit":
-                    return new FileContent(contentId, Path.Combine(_state.Workspace.Path, name), read);
+                switch (type)
+                {
+                    case "edit":
+                        return FileContent.Create(contentId, name, Path.Combine(_state.Workspace.Path, name), read);
 
-                default:
-                    throw new ArgumentException("Unknonwn content-type: " + type + "");
-            }
+                    default:
+                        throw new ArgumentException("Unknonwn content-type: " + type + "");
+                }
+            };
+
+            if (!read)
+                return get();
+            else
+                return _contentDictionary.GetOrAdd(contentId, s => get());
         }
 
         [Command("dialog::cancel")]
@@ -325,7 +347,7 @@ namespace Runt.Service
                 var tabs = s.Tabs.ToBuilder();
                 for (int i = 0, l = tabs.Count; i < l; i++)
                 {
-                    if(tabs[i].ContentId == contentId)
+                    if (tabs[i].ContentId == contentId)
                     {
                         if (tabs[i].Dirty)
                             throw new NotImplementedException("Notifying of dirty tabs beeing closed is not yet implemented");
@@ -340,11 +362,110 @@ namespace Runt.Service
             }));
         }
 
+        // reason for default = noop, later plan to add more options
+        public void MarkTab(string contentId, bool? dirty = null)
+        {
+            if (!dirty.HasValue)
+                return;
+
+            Update(Utils.Update((EditorState s, JObject c) =>
+            {
+                var tabs = s.Tabs;
+                int index = -1;
+                Tab tab = null;
+                for (int i = 0, l = tabs.Count; i < l; i++)
+                {
+                    tab = tabs[i];
+                    if(tab.ContentId == contentId)
+                    {
+                        index = i;
+                        break;
+                    }
+                }
+
+                if (index == -1)
+                    throw new Exception("tab not found");
+
+                JObject tabChange = new JObject();
+                JObject tabListChanges = new JObject();
+                if (dirty.HasValue)
+                    tab = tab.AsDirty(dirty.Value, tabChange);
+
+                Core.Utils.RegisterChange(tabListChanges, index.ToString(), tab, tabChange);
+                return s.WithTabs(tabs.SetItem(index, tab), c, tabListChanges);
+            }));
+        }
+
         [Command("content::load")]
         public void LoadContent(string contentId)
         {
             var content = GetContent(contentId, true);
             Send(Messages.Content(content));
+        }
+
+        [Command("code::update")]
+        public void UpdateCode(string contentId, TextDiff update)
+        {
+            Task.Run(() =>
+            {
+                // updates needs to be processed in the same order they are generated
+                // this method might wait for the next update, thus running in background
+                // thread
+                Content content;
+                var dict = _contentDictionary;
+                lock (dict)
+                {
+                    while (update.Update != Volatile.Read(ref _nextUpdate))
+                        Monitor.Wait(dict);
+
+                    Interlocked.Increment(ref _nextUpdate);
+
+                    if (!_contentDictionary.TryGetValue(contentId, out content))
+                        throw new Exception("Content wasn't in dictionary. Illegal code::update sent");
+
+                    if (update.Start == 0 && update.Added == content.ContentString.Length && update.Text == content.ContentString)
+                        goto highlight; // editor sends updates when files are opened
+
+                    var text = content.ContentString;
+                    var sb = new StringBuilder().Append(text, 0, update.Start);
+                    sb.Append(update.Text);
+                    sb.Append(text, update.Start + update.Removed, text.Length - update.Start - update.Removed);
+                    text = sb.ToString();
+                    Content old = content;
+                    content = content.WithText(text);
+
+                    if (!_contentDictionary.TryUpdate(contentId, content, old))
+                        throw new Exception("Content has been updated by other method. State inconclusive.");
+                }
+
+                // mark dirty
+                MarkTab(contentId, dirty: true);
+
+                highlight:
+                Highlight(content);
+            });
+        }
+
+        private void Highlight(Content content)
+        {
+            var workspace = _state.Workspace;
+            if (workspace == null)
+                return;
+
+            var proj = workspace.Projects.SingleOrDefault(p => content.RelativePath.StartsWith(p.RelativePath, StringComparison.OrdinalIgnoreCase));
+            if (proj == null)
+                return;
+
+            if (proj.Sources.Count == 0)
+                return;
+
+            if (proj.References == null)
+                return;
+
+            var highlight = new Highlighter(proj).Highlight(_contentDictionary.Values.ToDictionary(c => Path.Combine(workspace.Path, c.RelativePath)), content);
+
+            Send(Messages.Highlight(content.ContentId, highlight));
+
         }
 
         private void HostDiagnostics(object sender, DiagnosticsEventArgs e)
@@ -363,7 +484,11 @@ namespace Runt.Service
 
         private void HostSources(object sender, SourcesEventArgs e)
         {
-            // Do nothing for now
+            var proj = _state.Workspace.Projects.SingleOrDefault(p => p.Id == e.ContextId);
+            if (proj == null)
+                return;
+
+            UpdateNode<ProjectEntry>(proj.RelativePath, (p, c) => p.WithSources(e));
         }
 
         private void HostReferences(object sender, ReferencesEventArgs e)

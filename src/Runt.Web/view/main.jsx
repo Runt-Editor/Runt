@@ -1,6 +1,6 @@
 ﻿/** @jsx React.DOM */
 
-define(['require', 'exports', 'react', '../app', 'orion/editor/edit'], function(require, exports, React, app, edit) {
+define(['require', 'exports', 'react', '../app', '../editor', 'orion/editor/edit'], function(require, exports, React, app, editor, edit) {
   var Dialogs = {
     browse: React.createClass({
       render: function() {
@@ -299,13 +299,12 @@ define(['require', 'exports', 'react', '../app', 'orion/editor/edit'], function(
 
     componentDidMount: function() {
       var node = this.getDOMNode();
-      var editor = edit({
-        parent: node,
-        expandTab: true,
-        contentType: 'java'
+      var e = editor.create(node, {
+        contentType: 'text/csharp'
       });
+      // var e = edit({parent: node});
       this.setState({
-        editor: editor
+        editor: e
       });
     },
 
@@ -338,7 +337,7 @@ define(['require', 'exports', 'react', '../app', 'orion/editor/edit'], function(
 
     render: function() {
       return (
-        <div className="content-area" />
+        <div className="content-area editor" />
       );
     }
   });

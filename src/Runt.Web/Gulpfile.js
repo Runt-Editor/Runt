@@ -67,6 +67,10 @@ gulp.task('watch', function() {
     .pipe(react())
     .pipe(gulp.dest('js/view'));
 
+  watch({glob: 'script/**/*.js'})
+    .pipe(plumber())
+    .pipe(gulp.dest('js'));
+
   watch({glob: 'style/**/*.styl', emit: 'all'}, function(files) {
     try {
       files

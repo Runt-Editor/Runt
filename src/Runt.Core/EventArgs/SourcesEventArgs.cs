@@ -5,22 +5,31 @@ namespace Runt.Core
 {
     public class SourcesEventArgs : ProjectEventArgs
     {
-        readonly SourcesMessage _sources;
+        readonly ImmutableList<string> _files;
+        readonly ImmutableDictionary<string, string> _generatedFiles;
 
         public SourcesEventArgs(int contextId, SourcesMessage sources)
             : base(contextId)
         {
-            _sources = sources;
+            if (sources.Files == null)
+                _files = ImmutableList.Create<string>();
+            else
+                _files = ImmutableList.CreateRange(sources.Files);
+
+            if (sources.GeneratedFiles == null)
+                _generatedFiles = ImmutableDictionary.Create<string, string>();
+            else
+                _generatedFiles = sources.GeneratedFiles.ToImmutableDictionary();
         }
 
-        public IImmutableList<string> Files
+        public ImmutableList<string> Files
         {
-            get { return _sources.Files.ToImmutableList(); }
+            get { return _files; }
         }
 
-        public IImmutableDictionary<string, string> GeneratedFiles
+        public ImmutableDictionary<string, string> GeneratedFiles
         {
-            get { return _sources.GeneratedFiles.ToImmutableDictionary(); }
+            get { return _generatedFiles; }
         }
     }
 }

@@ -51,6 +51,16 @@ namespace Runt.Core
                 get { return _ref.Version; }
             }
 
+            public string Type
+            {
+                get { return _ref.Type; }
+            }
+
+            public string Path
+            {
+                get { return _ref.Path; }
+            }
+
             public IImmutableList<Dependency> Dependencies
             {
                 get { return _ref.Dependencies.Select(d => new Dependency(d)).ToImmutableArray(); }

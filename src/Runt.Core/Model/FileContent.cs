@@ -8,12 +8,20 @@ namespace Runt.Core.Model
         readonly FileInfo _file;
         readonly string _content;
 
-        public FileContent(string contentId, string path, bool read)
-            : base(contentId)
+        public static FileContent Create(string contentId, string relativePath, string path, bool read)
         {
-            _file = new FileInfo(path);
+            string text = null;
             if (read)
-                _content = File.ReadAllText(path);
+                text = File.ReadAllText(path);
+
+            return new FileContent(contentId, relativePath, false, new FileInfo(path), text);
+        }
+
+        public FileContent(string contentId, string relativePath, bool dirty, FileInfo file, string text)
+            : base(contentId, relativePath, dirty)
+        {
+            _file = file;
+            _content = text;
         }
 
         public override string ContentString
@@ -34,6 +42,11 @@ namespace Runt.Core.Model
         public override string Tooltip
         {
             get { return _file.FullName; }
+        }
+
+        public override Content WithText(string text)
+        {
+            return new FileContent(ContentId, RelativePath, true, _file, text);
         }
     }
 }

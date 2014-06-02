@@ -20,7 +20,8 @@ var state = {
         open: null
     },
     _cache: {
-        content: {}
+        content: {},
+        annotate: {}
     }
 };
 
@@ -32,6 +33,10 @@ function handle(msg: any): void {
 
         case 'content':
             updateContent(msg.data);
+            break;
+
+        case 'highlight':
+            highlightCode(msg.data);
             break;
     }
 }
@@ -117,6 +122,7 @@ function updateState(diff: any): void {
                 if (state._cache.content[cid] === undefined) {
                     state._cache.content[cid] = null;
                     invoke('content::load', cid);
+                    break;
                 }
             }
         }
@@ -134,6 +140,23 @@ function updateContent(content: any): void {
             content: contentCacheUpdate
         }
     });
+}
+
+var _highlight;
+function highlightCode(content: any): void {
+    var cid = content.cid;
+    var displayData = content.data;
+    if (state.tabs) {
+        var tabs = state.tabs;
+        for (var i = 0, l = tabs.length; i < l; i++) {
+            var tab = tabs[i];
+            if (tab.active) {
+                if (cid == tab.cid)
+                    _highlight(displayData);
+                return;
+            }
+        }
+    }
 }
 
 export function invoke(name, ...args): void {
@@ -175,4 +198,22 @@ export function toggleMenu(name: string): void {
             open: name
         }
     });
+}
+
+export function updateCode(update: any): void {
+    if (state.tabs) {
+        var tabs = state.tabs;
+        for (var i = 0, l = tabs.length; i < l; i++) {
+            var tab = tabs[i];
+            if (tab.active) {
+                var cid = tab.cid;
+                invoke('code::update', cid, update);
+                return;
+            }
+        }
+    }
+}
+
+export function routeHighlight(fn) {
+    _highlight = fn;
 }

@@ -6,6 +6,7 @@
         "Microsoft.Framework.DependencyInjection":  "0.1-alpha-*",
         "Newtonsoft.Json": "5.0.8",
         "Microsoft.Bcl.Immutable": "1.1.22-beta",
+        "K.Roslyn":  "0.1-alpha-*",
         "Runt.Core":  "",
         "Runt.DesignTimeHost": ""
     },

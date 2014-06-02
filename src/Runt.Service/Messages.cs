@@ -49,5 +49,14 @@ namespace Runt.Service
         {
             return Message("content", JsonConvert.SerializeObject(content));
         }
+
+        internal static string Highlight(string contentId, JObject highlight)
+        {
+            JObject send = new JObject(
+                new JProperty("cid", contentId),
+                new JProperty("data", highlight)
+            );
+            return Message("highlight", send.ToString(Formatting.None));
+        }
     }
 }
