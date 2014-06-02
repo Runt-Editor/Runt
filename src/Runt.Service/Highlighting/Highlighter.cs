@@ -136,6 +136,9 @@ namespace Runt.Service.Highlighting
                 case "Assembly":
                     return new MetadataFileReference(package.Path);
 
+                case "Project":
+                    throw new NotImplementedException();
+
                 default:
                     throw new Exception("Unknown package type");
             }
