@@ -15,12 +15,23 @@ connection.received.on(message => {
     }
 });
 
-var state = {};
+var state = {
+    _menu: {
+        open: null
+    },
+    _cache: {
+        content: {}
+    }
+};
 
 function handle(msg: any): void {
     switch (msg.type) {
         case 'state':
             updateState(msg.data);
+            break;
+
+        case 'content':
+            updateContent(msg.data);
             break;
     }
 }
@@ -84,9 +95,9 @@ function merge(obj: any, diff: any): any {
 
 var component = React.renderComponent(view.Main({
     onClick: function (evt) {
-        if (component.state.menu.open !== null) {
-            component.setState({
-                menu: {
+        if (component.state._menu.open !== null) {
+            updateState({
+                _menu: {
                     open: null
                 }
             });
@@ -97,19 +108,55 @@ var component = React.renderComponent(view.Main({
 function updateState(diff: any): void {
     state = merge(state, diff);
 
+    if (state.tabs) {
+        var tabs = state.tabs;
+        for (var i = 0, l = tabs.length; i < l; i++) {
+            var tab = tabs[i];
+            if (tab.active) {
+                var cid = tab.cid;
+                if (state._cache.content[cid] === undefined) {
+                    state._cache.content[cid] = null;
+                    invoke('content::load', cid);
+                }
+            }
+        }
+    }
+
     component.setState(state);
 }
 
-function invoke(name, ...args): void {
+function updateContent(content: any): void {
+    var cid = content.cid;
+    var contentCacheUpdate = {};
+    contentCacheUpdate[cid] = content;
+    updateState({
+        _cache: {
+            content: contentCacheUpdate
+        }
+    });
+}
+
+export function invoke(name, ...args): void {
     connection.send(JSON.stringify({
         name: name,
         args: args
     }));
 }
 
-export function fnInvoke(name, ...args): (evt: any) => void {
+export function fnInvoke(...args): (evt: any) => void {
+    var stop = false;
+
+    if (args[0] === true) {
+        stop = true;
+        args = args.slice(1);
+    }
+
     return (evt: any) => {
-        invoke.apply(null, [name].concat(args));
+        if (stop) {
+            evt.stopPropagation();
+        }
+
+        invoke.apply(null, args);
     };
 }
 
@@ -122,9 +169,9 @@ export function browseProject(path: string): void {
 }
 
 export function toggleMenu(name: string): void {
-    name = component.state.menu.open === name ? null : name;
+    name = component.state._menu.open === name ? null : name;
     component.setState({
-        menu: {
+        _menu: {
             open: name
         }
     });

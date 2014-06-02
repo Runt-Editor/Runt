@@ -1,7 +1,7 @@
 ﻿using System.Collections.Immutable;
 using Runt.DesignTimeHost.Incomming;
 
-namespace Runt.DesignTimeHost
+namespace Runt.Core
 {
     public class ConfigurationsEventArgs : ProjectEventArgs
     {

@@ -38,6 +38,11 @@ namespace Runt.Core.Model.FileTree
             get { return _file.Name; }
         }
 
+        public override string ContentId
+        {
+            get { return "edit:" + RelativePath; }
+        }
+
         public override IReadOnlyList<Entry> Children
         {
             get { return ImmutableList.Create<Entry>(); }

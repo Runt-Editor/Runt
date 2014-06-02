@@ -48,6 +48,12 @@ namespace Runt.Core.Model.FileTree
             get { return _isOpen; }
         }
 
+        [JsonProperty("cid")]
+        public virtual string ContentId
+        {
+            get { return null; }
+        }
+
         [JsonProperty("name")]
         public abstract string Name { get; }
 

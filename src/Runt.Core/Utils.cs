@@ -9,9 +9,9 @@ using Runt.Core.Model.FileTree;
 
 namespace Runt.Core
 {
-    static class Utils
+    public static class Utils
     {
-        internal static void RegisterChange<T>(JObject change, Expression<Func<T>> property, T newVal, JObject partials)
+        public static void RegisterChange<T>(JObject change, Expression<Func<T>> property, T newVal, JObject partials)
         {
             Contract.Requires(change != null);
             Contract.Requires(property != null);
@@ -23,7 +23,7 @@ namespace Runt.Core
             RegisterChange(change, name, newVal, partials);
         }
 
-        internal static void RegisterChange<T>(JObject change, string property, T newVal, JObject partials)
+        public static void RegisterChange<T>(JObject change, string property, T newVal, JObject partials)
         {
             Contract.Requires(change != null);
             Contract.Requires(property != null);
@@ -34,9 +34,15 @@ namespace Runt.Core
             else if (newVal is IEnumerable<Entry>)
                 subChange = JArray.FromObject(newVal);
             else
-                subChange = partials ?? (newVal == null ? null : JObject.FromObject(newVal));
+                subChange = partials ?? (newVal == null ? null : JToken.FromObject(newVal));
             if (change.Property(property) != null)
-                Merge((JObject)change.Property(property).Value, (JObject)subChange);
+            {
+                var previousChange = change.Property(property);
+                if (previousChange.Value is JObject && subChange is JObject)
+                    Merge((JObject)previousChange.Value, (JObject)subChange);
+                else
+                    previousChange.Value = subChange;
+            }
             else
                 change.Add(new JProperty(property, subChange));
         }
@@ -53,7 +59,7 @@ namespace Runt.Core
             }
         }
 
-        internal static string NameOf<T>(Expression<Func<T>> property)
+        public static string NameOf<T>(Expression<Func<T>> property)
         {
             var member = GetMemberInfo(property);
             if (member.GetCustomAttribute<JsonIgnoreAttribute>() != null)

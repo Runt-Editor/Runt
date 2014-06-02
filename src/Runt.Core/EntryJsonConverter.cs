@@ -26,14 +26,12 @@ namespace Runt.Core
 
             Entry entry = (Entry)value;
             writer.WriteStartObject();
-            writer.WritePropertyName(Utils.NameOf(() => entry.RelativePath));
-            writer.WriteValue(entry.RelativePath);
-            writer.WritePropertyName(Utils.NameOf(() => entry.IsOpen));
-            writer.WriteValue(entry.IsOpen);
-            writer.WritePropertyName(Utils.NameOf(() => entry.Name));
-            writer.WriteValue(entry.Name);
-            writer.WritePropertyName(Utils.NameOf(() => entry.Type));
-            writer.WriteValue(entry.Type);
+            serializer.WriteProperty(writer, Utils.NameOf(() => entry.ContentId), entry.ContentId);
+            serializer.WriteProperty(writer, Utils.NameOf(() => entry.RelativePath), entry.RelativePath);
+            serializer.WriteProperty(writer, Utils.NameOf(() => entry.IsOpen), entry.IsOpen);
+            serializer.WriteProperty(writer, Utils.NameOf(() => entry.Name), entry.Name);
+            serializer.WriteProperty(writer, Utils.NameOf(() => entry.Type), entry.Type);
+
             writer.WritePropertyName(Utils.NameOf(() => entry.Children));
             if (entry.IsOpen)
             {

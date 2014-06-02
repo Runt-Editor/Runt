@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Threading;
-using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Runt.Core;
 using Runt.Core.Model;
@@ -10,7 +9,6 @@ using System.IO;
 using Runt.DesignTimeHost;
 using Runt.Core.Model.FileTree;
 using System.Collections.Generic;
-using System.Diagnostics;
 
 namespace Runt.Service
 {
@@ -50,6 +48,7 @@ namespace Runt.Service
 
         private void Invoke(Command command)
         {
+            // TODO: Cache dictionary of command-name -> Action
             var type = GetType();
             var methods = type.GetMethods();
             object[] args = new object[0];
@@ -113,13 +112,13 @@ namespace Runt.Service
             }
         }
 
-        void UpdateNode<TNodeType>(string relPath, Func<TNodeType, JObject, TNodeType> update)
+        void UpdateNode<TNodeType>(string relPath, Func<TNodeType, JObject, TNodeType> update, Func<EditorState, JObject, EditorState> postChanges = null)
             where TNodeType : Entry
         {
-            UpdateNodes(new[] { new Tuple<string, Func<TNodeType, JObject, TNodeType>>(relPath, update) });
+            UpdateNodes(new[] { new Tuple<string, Func<TNodeType, JObject, TNodeType>>(relPath, update) }, postChanges);
         }
 
-        void UpdateNodes<TNodeType>(IEnumerable<Tuple<string, Func<TNodeType, JObject, TNodeType>>> updates)
+        void UpdateNodes<TNodeType>(IEnumerable<Tuple<string, Func<TNodeType, JObject, TNodeType>>> updates, Func<EditorState, JObject, EditorState> postChanges = null)
             where TNodeType : Entry
         {
             Update(Utils.Update((EditorState s, JObject c) =>
@@ -132,7 +131,10 @@ namespace Runt.Service
                     content = UpdateNodeImpl(content, update.Item1, update.Item2, contentC);
 
                 workspace = workspace.WithContent(content, workspaceC, contentC);
-                return s.WithWorkspace(workspace, c, workspaceC);
+                var newState = s.WithWorkspace(workspace, c, workspaceC);
+                if (postChanges != null)
+                    return postChanges(newState, c);
+                return newState;
             }));
         }
 
@@ -153,7 +155,7 @@ namespace Runt.Service
                     TNodeType n = (TNodeType)child;
                     newEntry = update(n, subChange);
 
-                    if(!newEntry.IsOpen && subChange.Property("children") != null)
+                    if (!newEntry.IsOpen && subChange.Property("children") != null)
                     {
                         var childrenUpdate = subChange.Property("children").Value;
                         if (childrenUpdate is JArray)
@@ -194,6 +196,22 @@ namespace Runt.Service
                 Send(Messages.StateUpdate(newState.Item2));
         }
 
+        Content GetContent(string contentId, bool read)
+        {
+            var parts = contentId.Split(new[] { ':' }, 2);
+            var type = parts[0];
+            var name = parts[1];
+
+            switch (type)
+            {
+                case "edit":
+                    return new FileContent(contentId, Path.Combine(_state.Workspace.Path, name), read);
+
+                default:
+                    throw new ArgumentException("Unknonwn content-type: " + type + "");
+            }
+        }
+
         [Command("dialog::cancel")]
         public void CancelDialog()
         {
@@ -216,7 +234,7 @@ namespace Runt.Service
         public void OpenProject(string path)
         {
             Update(Utils.Update((EditorState s, JObject c) =>
-                s.WithDialog(null, c).WithWorkspace(Workspace.Create(path), c)
+                s.Reset(c).WithWorkspace(Workspace.Create(path), c)
             ));
 
             if (_host != null)
@@ -225,13 +243,127 @@ namespace Runt.Service
             _host = new Host(path);
             _host.Connected += HostConnected;
             _host.References += HostReferences;
+            _host.Sources += HostSources;
+            _host.Diagnostics += HostDiagnostics;
             _host.Start(Kvm.GetRuntime("default"));
         }
+
 
         [Command("tree:node::toggle")]
         public void TogleNode(string rel)
         {
             UpdateNode<Entry>(rel, (e, c) => e.AsOpen(!e.IsOpen, c));
+        }
+
+        [Command("tab::open")]
+        public void OpenTab(string contentId)
+        {
+            Update(Utils.Update((EditorState s, JObject c) =>
+            {
+                JObject tabChanges = new JObject();
+                JObject partial;
+                Tab newVal;
+                bool create = true;
+                var tabs = s.Tabs.ToBuilder();
+                for (int i = 0, l = tabs.Count; i < l; i++)
+                {
+                    partial = new JObject();
+                    if (tabs[i].ContentId == contentId)
+                    {
+                        create = false;
+                        newVal = tabs[i].AsActive(true, partial);
+                    }
+                    else
+                    {
+                        newVal = tabs[i].AsActive(false, partial);
+                    }
+                    Core.Utils.RegisterChange(tabChanges, i.ToString(), newVal, partial);
+                    tabs[i] = newVal;
+                }
+
+                if (create)
+                {
+                    var content = GetContent(contentId, false);
+                    newVal = new Tab(contentId, content.Name, content.Tooltip, false, true);
+                    Core.Utils.RegisterChange(tabChanges, tabs.Count.ToString(), newVal, null);
+                    tabs.Add(newVal);
+                }
+
+                var t = tabs.ToImmutable();
+                return s.WithTabs(t, c, tabChanges);
+            }));
+        }
+
+        [Command("tab::select")]
+        public void SelectTab(string contentId)
+        {
+            Update(Utils.Update((EditorState s, JObject c) =>
+            {
+                JObject tabChanges = new JObject();
+                JObject partial;
+                Tab newVal;
+                var tabs = s.Tabs.ToBuilder();
+                for (int i = 0, l = tabs.Count; i < l; i++)
+                {
+                    partial = new JObject();
+                    newVal = tabs[i].AsActive(tabs[i].ContentId == contentId, partial);
+                    Core.Utils.RegisterChange(tabChanges, i.ToString(), newVal, partial);
+                    tabs[i] = newVal;
+                }
+
+                var t = tabs.ToImmutable();
+                return s.WithTabs(t, c, tabChanges);
+            }));
+        }
+
+        [Command("tab::close")]
+        public void CloseTab(string contentId)
+        {
+            // TODO: if active, automatically select another tab
+            Update(Utils.Update((EditorState s, JObject c) =>
+            {
+                var tabs = s.Tabs.ToBuilder();
+                for (int i = 0, l = tabs.Count; i < l; i++)
+                {
+                    if(tabs[i].ContentId == contentId)
+                    {
+                        if (tabs[i].Dirty)
+                            throw new NotImplementedException("Notifying of dirty tabs beeing closed is not yet implemented");
+
+                        tabs.RemoveAt(i);
+                        break;
+                    }
+                }
+
+                var t = tabs.ToImmutable();
+                return s.WithTabs(t, c, null);
+            }));
+        }
+
+        [Command("content::load")]
+        public void LoadContent(string contentId)
+        {
+            var content = GetContent(contentId, true);
+            Send(Messages.Content(content));
+        }
+
+        private void HostDiagnostics(object sender, DiagnosticsEventArgs e)
+        {
+            var proj = _state.Workspace.Projects.SingleOrDefault(p => p.Id == e.ContextId);
+            if (proj == null)
+                return;
+
+            UpdateNode<ProjectEntry>(proj.RelativePath, (p, c) => p.WithDiagnostics(e.Errors, e.Warnings, c), (s, c) =>
+            {
+                // Workspace will be "updated" at this point, even though the update is about to be culled away, as it is empty
+                Core.Utils.RegisterChange((JObject)c.Property(Core.Utils.NameOf(() => s.Workspace)).Value, () => s.Workspace.ErrorList, s.Workspace.ErrorList, null);
+                return s;
+            });
+        }
+
+        private void HostSources(object sender, SourcesEventArgs e)
+        {
+            // Do nothing for now
         }
 
         private void HostReferences(object sender, ReferencesEventArgs e)

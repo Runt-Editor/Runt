@@ -2,7 +2,7 @@
 @require "variables"
 @require "mixins"
 @require "font"
-@require "icons"
+
 
 html, body, .root
   background-color: background-color
@@ -238,9 +238,14 @@ nav.side-menu
 .content-area
   overflow: auto
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.33)
-  margin: 20px
+  margin: 5px
+  margin-top: 0
   background: white
   flex: 1 1 100%
+  z-index: 2
+  position: relative
+  > div
+    position: absolute !important
 
 .scroll-view
   flex: 1 1 100%
@@ -275,6 +280,48 @@ table.file-tree
         vertical-align: bottom
 
 
+// tab bar
+.tab-bar
+  flex: none
+  height: tab-height - 1px
+  overflow: hidden
+  padding-left: 5px
+  margin-right: 20px
+  margin-top: 8px
+  margin-bottom: -1px
+  padding-top: 2px
+
+  > .tab
+    cursor: default
+    float: left
+    height: tab-height
+    min-width: 40px
+    padding-left: 5px
+    margin-right: 5px
+    z-index: 1
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.33)
+
+    &:hover
+      background-color: white
+
+    &.active
+      z-index: 3
+      position: relative
+      background-color: white
+
+    > .star
+      font-size: 12px
+
+    > .close
+      font-size: 12px
+      margin-left: 5px
+      margin-right: -2px
+      color: lightgrey
+
+      &:hover
+        color: grey
+
+
 // links
 a, .link
   text-decoration: none
@@ -283,3 +330,7 @@ a, .link
   &:hover
     pointer()
     text-decoration: underline
+
+
+@require "icons"
+@require "editor/editor"

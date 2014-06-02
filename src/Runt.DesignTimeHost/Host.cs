@@ -7,6 +7,7 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
+using Runt.Core;
 
 namespace Runt.DesignTimeHost
 {
@@ -60,6 +61,34 @@ namespace Runt.DesignTimeHost
             var r = References;
             if (r != null)
                 r(this, e);
+        }
+
+        public event EventHandler<DiagnosticsEventArgs> Diagnostics;
+        private void OnDiagnostics(DiagnosticsEventArgs e)
+        {
+            var d = Diagnostics;
+            if (d != null)
+                d(this, e);
+        }
+
+        public event EventHandler<SourcesEventArgs> Sources;
+        private void OnSources(SourcesEventArgs e)
+        {
+            var s = Sources;
+            if (s != null)
+                s(this, e);
+        }
+
+        public event EventHandler<HostErrorEventArgs> Error;
+        private void OnError(HostErrorEventArgs e)
+        {
+            var er = Error;
+            if (er != null)
+                er(this, e);
+
+            // restart host
+            _host.Dispose();
+            Start();
         }
 
         private void Start()
@@ -192,9 +221,24 @@ namespace Runt.DesignTimeHost
                     OnReferences(new ReferencesEventArgs(obj.ContextId, references));
                     break;
 
+                case "Diagnostics":
+                    var diagnostics = obj.Payload.ToObject<Incomming.DiagnosticsMessage>();
+                    OnDiagnostics(new DiagnosticsEventArgs(obj.ContextId, diagnostics));
+                    break;
+
+                case "Sources":
+                    var sources = obj.Payload.ToObject<Incomming.SourcesMessage>();
+                    OnSources(new SourcesEventArgs(obj.ContextId, sources));
+                    break;
+
+                case "Error":
+                    var error = obj.Payload.ToObject<Incomming.ErrorMessage>();
+                    OnError(new HostErrorEventArgs(obj.ContextId, error));
+                    break;
+
                 default:
                     if (Debugger.IsAttached)
-                        ;// Debugger.Break();
+                        Debugger.Break();
                     break;
             }
         }

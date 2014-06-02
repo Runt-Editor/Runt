@@ -48,8 +48,11 @@
   <ItemGroup>
     <Compile Include="EntryJsonConverter.cs" />
     <Compile Include="EventArgs\ConfigurationsEventArgs.cs" />
+    <Compile Include="EventArgs\DiagnosticsEventArgs.cs" />
+    <Compile Include="EventArgs\HostErrorEventArgs.cs" />
     <Compile Include="EventArgs\ProjectEventArgs.cs" />
     <Compile Include="EventArgs\ReferencesEventArgs.cs" />
+    <Compile Include="EventArgs\SourcesEventArgs.cs" />
     <Compile Include="Incomming\CompilationSettings.cs" />
     <Compile Include="Incomming\ConfigurationData.cs" />
     <Compile Include="Incomming\ConfigurationsMessage.cs" />
@@ -60,6 +63,7 @@
     <Compile Include="Incomming\ReferencesMessage.cs" />
     <Compile Include="Incomming\SourcesMessage.cs" />
     <Compile Include="IOExtensions.cs" />
+    <Compile Include="Model\DiagnosticMessage.cs" />
     <Compile Include="Model\FileTree\DirectoryEntry.cs" />
     <Compile Include="Model\EditorState.cs" />
     <Compile Include="IClientConnection.cs" />

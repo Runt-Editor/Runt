@@ -219,6 +219,7 @@ define(['require', 'exports', 'react', '../app', 'orion/editor/edit'], function(
       function walk(node, indent) {
         if(indent > 0) {
           items.push({
+            cid: node.cid,
             name: node.name,
             type: node.type,
             key: node.key,
@@ -234,6 +235,15 @@ define(['require', 'exports', 'react', '../app', 'orion/editor/edit'], function(
         });
       }
 
+      function open(item) {
+        return function(evt) {
+          evt.preventDefault();
+          if(item.cid !== null) {
+            app.invoke('tab::open', item.cid);
+          }
+        };
+      }
+
       if(this.props.content) {
         walk(this.props.content, 0);
       }
@@ -246,7 +256,7 @@ define(['require', 'exports', 'react', '../app', 'orion/editor/edit'], function(
 
               return (
                 <tr key={item.key}>
-                  <td style={{paddingLeft: (item.indent * 16) + 'px'}}>
+                  <td style={{paddingLeft: (item.indent * 16) + 'px'}} onDoubleClick={open(item)}>
                     <span className={arrowClass} style={{visibility: item.hasChildren ? 'visible' : 'hidden'}} onClick={app.fnInvoke('tree:node::toggle', item.key)} />
                     <span className={'core-sprite-' + item.icon} />
                     <a href="#">{item.name}</a>
@@ -289,12 +299,14 @@ define(['require', 'exports', 'react', '../app', 'orion/editor/edit'], function(
 
     componentDidMount: function() {
       var node = this.getDOMNode();
-      // var editor = edit({
-      //   parent: node,
-      //   contentType: 'js',
-      //   expandTab: true,
-      //   title: 'Test'
-      // });
+      var editor = edit({
+        parent: node,
+        expandTab: true,
+        contentType: 'java'
+      });
+      this.setState({
+        editor: editor
+      });
     },
 
     componentWillUnmount: function() {
@@ -304,10 +316,48 @@ define(['require', 'exports', 'react', '../app', 'orion/editor/edit'], function(
       });
     },
 
+    componentWillReceiveProps: function(nextProps) {
+      if(nextProps.content && nextProps.content !== this.props.content) {
+        if(!this.props.content) {
+          this.state.editor.install();
+        }
+        // TODO: Ensure saved
+        var editor = this.state.editor;
+        var content = nextProps.content;
+        editor.setInput(content.name, null, content.content, true /* saved */);
+        editor.setText(content.content);
+      } else if(!nextProps.content && this.props.content) {
+        this.state.editor.uninstall();
+      }
+    },
+
+    shouldComponentUpdate: function() {
+      // updates are handled by orion
+      return false;
+    },
+
     render: function() {
       return (
         <div className="content-area" />
       );
+    }
+  });
+
+  var TabBar = React.createClass({
+    render: function() {
+      return (
+        <div className="tab-bar">
+          {(this.props.tabs || []).map(function(t) {
+            var className = t.active ? 'tab active' : 'tab';
+            return (
+              <div className={className} onClick={app.fnInvoke('tab::select', t.cid)}>
+                {t.name + (t.dirty ? '*' : '')}
+                <span className="core-sprite-close imageSprite close" onClick={app.fnInvoke(true, 'tab::close', t.cid)} />
+              </div>
+            );
+          })}
+        </div>
+        );
     }
   });
 
@@ -322,7 +372,8 @@ define(['require', 'exports', 'react', '../app', 'orion/editor/edit'], function(
     render: function() {
       return (
         <div className="pane page-content">
-          <Editor />
+          <TabBar tabs={this.props.tabs} />
+          <Editor content={this.props.content} />
         </div>
       );
     }
@@ -360,7 +411,7 @@ define(['require', 'exports', 'react', '../app', 'orion/editor/edit'], function(
             <SideMenu />
             <LeftPane workspace={this.props.workspace} open={this.state.open} width={this.state.sidebarWidth} />
             <PaneDragger open={this.state.open} width={this.state.sidebarWidth} />
-            <PageContent workspace={this.props.workspace} />
+            <PageContent workspace={this.props.workspace} tabs={this.props.tabs} content={this.props.content} />
           </div>
         );
       }
@@ -369,6 +420,17 @@ define(['require', 'exports', 'react', '../app', 'orion/editor/edit'], function(
   var Main = React.createClass({
     render: function() {
       var extra = null;
+      var content = null;
+      if(this.state.tabs) {
+        var tabs = this.state.tabs;
+        for(var i = 0, l = tabs.length; i < l; i++) {
+          if(tabs[i].active)
+          {
+            content = this.state._cache.content[tabs[i].cid];
+            break;
+          }
+        }
+      }
 
       if(this.state.dialog) {
         var dialog = Dialogs[this.state.dialog.name];
@@ -381,8 +443,8 @@ define(['require', 'exports', 'react', '../app', 'orion/editor/edit'], function(
 
       return this.transferPropsTo(
         <div className="root">
-          <Header menu={this.state.menu} />
-          <Content workspace={this.state.workspace} />
+          <Header menu={this.state._menu} />
+          <Content workspace={this.state.workspace} tabs={this.state.tabs} content={content} />
           {extra}
         </div>
       );
@@ -390,8 +452,12 @@ define(['require', 'exports', 'react', '../app', 'orion/editor/edit'], function(
 
     getInitialState: function() { 
       return {
-        menu: {
+        _menu: {
           open: null
+        },
+
+        _cache: {
+          content: {}
         }
       };
     }

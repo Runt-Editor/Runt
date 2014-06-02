@@ -3,7 +3,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using Runt.DesignTimeHost.Incomming;
 
-namespace Runt.DesignTimeHost
+namespace Runt.Core
 {
     public class ReferencesEventArgs : ProjectEventArgs
     {

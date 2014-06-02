@@ -16,15 +16,16 @@ namespace Runt.Core.Model.FileTree
         readonly ReferencesEntry _references;
         protected new readonly Lazy<IReadOnlyList<Entry>> _children;
         readonly int _id;
+        readonly ImmutableList<DiagnosticMessage> _diagnostics;
 
         protected ProjectEntry(string rel, bool isOpen, DirectoryInfo dir, ImmutableList<DirectoryEntry> directories,
-            ImmutableList<Entry> files, ReferencesEntry references,
-            int id)
+            ImmutableList<Entry> files, ReferencesEntry references, ImmutableList<DiagnosticMessage> diagnostics, int id)
             : base(rel, isOpen, dir, directories, files)
         {
             _id = id;
             _references = references;
             _children = new Lazy<IReadOnlyList<Entry>>(() => ImmutableList.Create<Entry>(_references).AddRange(base.Children));
+            _diagnostics = diagnostics;
         }
 
         public static new Tuple<DirectoryEntry, ImmutableList<ProjectEntry>> Create(DirectoryInfo dir, string relativePath)
@@ -49,7 +50,8 @@ namespace Runt.Core.Model.FileTree
                         select (Entry)FileEntry.Create(f, IOPath.Combine(relativePath, f.Name));
 
             var project = new ProjectEntry(relativePath, false, dir, dirs.ToImmutable(), files.ToImmutableList(),
-                new ReferencesEntry(false, relativePath + ":references", ImmutableList.Create<ReferenceEntry>()), -1);
+                new ReferencesEntry(false, relativePath + ":references", ImmutableList.Create<ReferenceEntry>()),
+                ImmutableList.Create<DiagnosticMessage>(), -1);
             return new Tuple<DirectoryEntry, ImmutableList<ProjectEntry>>(
                 project,
                 ImmutableList.Create(project));
@@ -58,7 +60,7 @@ namespace Runt.Core.Model.FileTree
         public ProjectEntry WithId(int id, JObject change)
         {
             Utils.RegisterChange(change, () => Id, id, null);
-            return new ProjectEntry(RelativePath, IsOpen, _dir, _directories, _files, _references, id);
+            return new ProjectEntry(RelativePath, IsOpen, _dir, _directories, _files, _references, _diagnostics, id);
         }
 
         public override Entry WithChild(int index, Entry child, JObject changes, JObject subChange)
@@ -72,13 +74,13 @@ namespace Runt.Core.Model.FileTree
             }
 
             var lists = ChangeIndex(index - 1, child, changes, subChange);
-            return new ProjectEntry(RelativePath, IsOpen, _dir, lists.Item1, lists.Item2, _references, _id);
+            return new ProjectEntry(RelativePath, IsOpen, _dir, lists.Item1, lists.Item2, _references, _diagnostics, _id);
         }
 
         public override Entry AsOpen(bool open, JObject c)
         {
             RegisterOpenChange(open, c);
-            return new ProjectEntry(RelativePath, open, _dir, _directories, _files, _references, _id);
+            return new ProjectEntry(RelativePath, open, _dir, _directories, _files, _references, _diagnostics, _id);
         }
 
         private ProjectEntry WithReferences(ReferencesEntry newRef, JObject changes, JObject subChanges)
@@ -89,7 +91,7 @@ namespace Runt.Core.Model.FileTree
             // Note: I use null here because I don't want to create the lists.
             // given that indexChange will never be null, this is safe.
             Utils.RegisterChange(changes, () => Children, null, indexChange);
-            return new ProjectEntry(RelativePath, IsOpen, _dir, _directories, _files, newRef, _id);
+            return new ProjectEntry(RelativePath, IsOpen, _dir, _directories, _files, newRef, _diagnostics, _id);
         }
 
         public ProjectEntry WithReferences(ReferencesEventArgs e, JObject c)
@@ -105,6 +107,17 @@ namespace Runt.Core.Model.FileTree
 
             var newRef = new ReferencesEntry(_references.IsOpen, _references.RelativePath, lookup(e.Root, _references.RelativePath).Dependencies);
             return WithReferences(newRef, c, null);
+        }
+
+        public ProjectEntry WithDiagnostics(IImmutableList<string> errors, IImmutableList<string> warnings, JObject change)
+        {
+            // note that diagnostics are not exposed on a project level,
+            // thus there is no call to RegisterChange
+            var diag = errors.Union(warnings)
+                .Select(DiagnosticMessage.Create).ToImmutableList();
+
+            return new ProjectEntry(RelativePath, IsOpen, _dir, _directories, _files, _references,
+                diag, _id);
         }
 
         [JsonIgnore]
@@ -123,6 +136,12 @@ namespace Runt.Core.Model.FileTree
         public string Path
         {
             get { return _dir.FullName; }
+        }
+
+        [JsonIgnore]
+        public ImmutableList<DiagnosticMessage> Diagnostics
+        {
+            get { return _diagnostics; }
         }
 
         public override string Type

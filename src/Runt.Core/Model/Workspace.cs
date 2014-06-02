@@ -14,6 +14,7 @@ namespace Runt.Core.Model
         readonly Entry _tree;
         readonly ImmutableList<string> _projects;
         readonly Lazy<ImmutableList<ProjectEntry>> _projectCache;
+        readonly Lazy<ImmutableList<DiagnosticMessage>> _errorList;
 
         private Workspace(DirectoryInfo dir, Entry tree,
             ImmutableList<string> projects)
@@ -22,6 +23,15 @@ namespace Runt.Core.Model
             _tree = tree;
             _projects = projects;
             _projectCache = new Lazy<ImmutableList<ProjectEntry>>(() => _projects.Select(p => FindProject(_tree, p)).ToImmutableList());
+            _errorList = new Lazy<ImmutableList<DiagnosticMessage>>(() =>
+            {
+                var diagnostics = ImmutableList.CreateBuilder<DiagnosticMessage>();
+
+                foreach (var project in _projectCache.Value)
+                    diagnostics.AddRange(project.Diagnostics);
+
+                return diagnostics.ToImmutable();
+            });
         }
 
         private static ProjectEntry FindProject(Entry entry, string relPath)
@@ -62,6 +72,12 @@ namespace Runt.Core.Model
         public ImmutableList<ProjectEntry> Projects
         {
             get { return _projectCache.Value; }
+        }
+
+        [JsonProperty("diagnostics")]
+        public ImmutableList<DiagnosticMessage> ErrorList
+        {
+            get { return _errorList.Value; }
         }
 
         [JsonProperty("path")]

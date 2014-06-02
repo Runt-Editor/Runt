@@ -44,5 +44,10 @@ namespace Runt.Service
         {
             return Message("state", diff.ToString(Formatting.None));
         }
+
+        public static string Content(Content content)
+        {
+            return Message("content", JsonConvert.SerializeObject(content));
+        }
     }
 }
