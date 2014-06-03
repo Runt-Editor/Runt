@@ -12,13 +12,20 @@ using System.Collections.Generic;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
 using System.Text;
-using Runt.Service.Highlighting;
+using Runt.Service.SourceServices;
+using Microsoft.CodeAnalysis.CSharp;
+using Runt.Service.CompilationModel;
+using Microsoft.CodeAnalysis;
+using System.Diagnostics.Contracts;
+using Runt.DesignTimeHost.Incomming;
 
 namespace Runt.Service
 {
     public class Editor : IEditor
     {
         private ConcurrentDictionary<string, Content> _contentDictionary = new ConcurrentDictionary<string, Content>();
+        private ConcurrentDictionary<int, ProjectCompilation> _compilations = new ConcurrentDictionary<int, ProjectCompilation>();
+        private ConcurrentDictionary<string, int> _projectLookup = new ConcurrentDictionary<string, int>();
         private EditorState _state = EditorState.Null;
         private FileSystemWatcher _watcher;
         private Host _host;
@@ -88,6 +95,137 @@ namespace Runt.Service
             method.Invoke(this, args);
         }
 
+        ProjectCompilation GetCompilation(int id)
+        {
+            Contract.Ensures(Contract.Result<ProjectCompilation>().IsValid);
+
+            var state = _state;
+            var compilation = _compilations.GetOrAdd(id, i => ProjectCompilation.Create(_state.Workspace.Projects.Single(p => p.Id == i).Name, i));
+            List<MetadataReference> references = null;
+            Dictionary<int, int> projRefs = null;
+            List<SyntaxTree> sources = null;
+            ProjectEntry proj = null;
+            ConfigurationData configData = null;
+            CSharpParseOptions config = null;
+            ProjectCompilation refComp;
+            if (compilation.IsValid)
+            {
+                foreach (var projectRef in compilation.ProjectReferences)
+                {
+                    refComp = GetCompilation(projectRef.Key);
+                    if (refComp.Version == projectRef.Value)
+                        continue;
+
+                    if (references == null)
+                        references = new List<MetadataReference>();
+
+                    if (projRefs == null)
+                        projRefs = new Dictionary<int, int>();
+
+                    references.Add(refComp.GetMetadataReference());
+                    projRefs.Add(refComp.Id, refComp.Version);
+                }
+
+                if (references == null)
+                    return compilation;
+            }
+
+            Workspace workspace = state.Workspace;
+            proj = workspace.Projects.Single(p => p.Id == id);
+
+            // TODO: Use "current configuration"
+            configData = proj.Configurations.Single(c => c.FrameworkName == "net45");
+
+            Action<string> addAssembly = path =>
+            {
+                if (!File.Exists(path))
+                    return;
+
+                DocumentationProvider doc = null;
+                var docFile = Path.ChangeExtension(path, ".xml");
+                if (File.Exists(docFile))
+                    doc = XmlDocumentationProvider.Create(docFile);
+
+                references.Add(new MetadataFileReference(path, documentation: doc));
+            };
+
+            if (references != null || compilation.NeedsReferences)
+            {
+                if (references == null)
+                    references = new List<MetadataReference>();
+                if (projRefs == null)
+                    projRefs = new Dictionary<int, int>();
+
+                foreach (var package in proj.References)
+                {
+                    if (package.Unresolved)
+                        continue;
+
+                    switch (package.Type)
+                    {
+                        case "Package":
+                            var path = Path.Combine(package.Path, "lib", proj.Configurations.Single(c => c.LongFrameworkName == package.Framework).FrameworkName);
+                            if (Directory.Exists(path))
+                            {
+                                foreach (var file in Directory.EnumerateFiles(path, "*.dll", SearchOption.TopDirectoryOnly))
+                                    addAssembly(file);
+                                foreach (var file in Directory.EnumerateFiles(path, "*.exe", SearchOption.TopDirectoryOnly))
+                                    addAssembly(file);
+                            }
+                            break;
+
+                        case "Assembly":
+                            if(File.Exists(package.Path))
+                                addAssembly(package.Path);
+                            else
+                            {
+                                // TODO: Implement assemblyneutral types
+                            }
+                            break;
+
+                        case "Project":
+                            // path is dir/project.json
+                            var pid = _projectLookup[Path.GetDirectoryName(package.Path)];
+                            if (!projRefs.ContainsKey(pid))
+                            {
+                                refComp = GetCompilation(pid);
+                                references.Add(refComp.GetMetadataReference());
+                                projRefs.Add(pid, refComp.Version);
+                            }
+                            break;
+
+                        default:
+                            throw new ArgumentException("Unknown reference type");
+                    }
+                }
+            }
+
+            if (sources != null || compilation.NeedsSources)
+            {
+                if (config == null)
+                    config = CSharpParseOptions.Default
+                        .WithLanguageVersion((LanguageVersion)configData.CompilationSettings.LanguageVersion)
+                        .WithPreprocessorSymbols(configData.CompilationSettings.Defines);
+
+                if (sources == null)
+                    sources = new List<SyntaxTree>();
+
+                // TODO: Support generated files
+                foreach (var source in proj.Sources)
+                {
+                    var content = _contentDictionary.Values.SingleOrDefault(c => Path.Combine(workspace.Path, c.RelativePath) == source);
+                    if (content != null)
+                        sources.Add(CSharpSyntaxTree.ParseText(content.ContentString, path: source, options: config));
+                    else
+                        sources.Add(CSharpSyntaxTree.ParseFile(source, options: config));
+                }
+            }
+
+            var newComp = compilation.Update(projRefs, references, sources);
+            _compilations.TryUpdate(id, newComp, compilation);
+            return newComp;
+        }
+
         void InitializeProjects(EditorState state)
         {
             if (state.Workspace != null)
@@ -98,6 +236,7 @@ namespace Runt.Service
                     if (!project.Initialized)
                     {
                         int id = Interlocked.Increment(ref _nextId);
+                        _projectLookup.AddOrUpdate(project.Path, id, (s, i) => id);
                         update.Add(new Tuple<ProjectEntry, int>(project, id));
                         if (_host != null)
                             _host.InitProject(id, project.Path);
@@ -267,9 +406,9 @@ namespace Runt.Service
             _host.References += HostReferences;
             _host.Sources += HostSources;
             _host.Diagnostics += HostDiagnostics;
+            _host.Configurations += HostConfigurations;
             _host.Start(Kvm.GetRuntime("default"));
         }
-
 
         [Command("tree:node::toggle")]
         public void TogleNode(string rel)
@@ -376,7 +515,7 @@ namespace Runt.Service
                 for (int i = 0, l = tabs.Count; i < l; i++)
                 {
                     tab = tabs[i];
-                    if(tab.ContentId == contentId)
+                    if (tab.ContentId == contentId)
                     {
                         index = i;
                         break;
@@ -397,14 +536,50 @@ namespace Runt.Service
         }
 
         [Command("content::load")]
-        public void LoadContent(string contentId)
+        public void LoadContent(int callback, string contentId)
         {
             var content = GetContent(contentId, true);
-            Send(Messages.Content(content));
+            Send(Messages.Callback(callback, content));
+        }
+
+        [Command("content::swap")]
+        public void SwapContent(int callback, string oldContentId, string text, string contentId)
+        {
+            if (oldContentId != null)
+                UpdateCode(oldContentId, text);
+
+            LoadContent(callback, contentId);
         }
 
         [Command("code::update")]
         public void UpdateCode(string contentId, TextDiff update)
+        {
+            UpdateCode(contentId, update, true);
+        }
+
+        [Command("symbol::get-info")]
+        public void GetSymbolInfo(int callback, string symbolName)
+        {
+            var state = _state;
+            var workspace = state.Workspace;
+            var tabs = state.Tabs;
+            var tab = tabs.SingleOrDefault(t => t.Active);
+            if (tab == null)
+                return;
+
+            var content = GetContent(tab.ContentId, false);
+
+            var proj = workspace.Projects.SingleOrDefault(p => content.RelativePath.StartsWith(p.RelativePath, StringComparison.OrdinalIgnoreCase));
+            if (proj == null)
+                return;
+
+            var compilation = GetCompilation(proj.Id);
+            var tokenInfo = TokenInfo.GetInfo(compilation.Compilation, Path.Combine(workspace.Path, content.RelativePath), symbolName);
+            Send(Messages.Callback(callback, ((JToken)tokenInfo) ?? new JRaw("null")));
+            //var symbolInfo = compilation.GetSymbolInfo(reference, symbolName);
+        }
+
+        public void UpdateCode(string contentId, TextDiff update, bool highlight)
         {
             Task.Run(() =>
             {
@@ -441,8 +616,58 @@ namespace Runt.Service
                 // mark dirty
                 MarkTab(contentId, dirty: true);
 
+                var workspace = _state.Workspace;
+                if (workspace == null)
+                    return;
+
+                var proj = workspace.Projects.SingleOrDefault(p => content.RelativePath.StartsWith(p.RelativePath, StringComparison.OrdinalIgnoreCase));
+                if (proj == null)
+                    return;
+
+                _compilations.AddOrUpdate(proj.Id, id => ProjectCompilation.Create(proj.Name, proj.Id), (i, p) => p.InvalidateSources());
+
                 highlight:
-                Highlight(content);
+                if (highlight)
+                    Highlight(content);
+            });
+        }
+
+        public void UpdateCode(string contentId, string text)
+        {
+            Task.Run(() =>
+            {
+                // updates needs to be processed in the same order they are generated
+                // this method might wait for the next update, thus running in background
+                // thread
+                Content content, old;
+                var dict = _contentDictionary;
+                lock (dict)
+                {
+                    if (!_contentDictionary.TryGetValue(contentId, out content))
+                        throw new Exception("Content wasn't in dictionary. Illegal code::update sent");
+
+                    old = content;
+                    content = content.WithText(text);
+
+                    if (!_contentDictionary.TryUpdate(contentId, content, old))
+                        throw new Exception("Content has been updated by other method. State inconclusive.");
+                }
+
+                // mark dirty
+                if (old.ContentString == content.ContentString)
+                    return;
+
+                var workspace = _state.Workspace;
+                if (workspace == null)
+                    return;
+
+                var proj = workspace.Projects.SingleOrDefault(p => content.RelativePath.StartsWith(p.RelativePath, StringComparison.OrdinalIgnoreCase));
+                if (proj == null)
+                    return;
+
+                _compilations.AddOrUpdate(proj.Id, id => ProjectCompilation.Create(proj.Name, proj.Id), (i, p) => p.InvalidateSources());
+
+                MarkTab(contentId, dirty: true);
             });
         }
 
@@ -462,10 +687,29 @@ namespace Runt.Service
             if (proj.References == null)
                 return;
 
-            var highlight = new Highlighter(proj).Highlight(_contentDictionary.Values.ToDictionary(c => Path.Combine(workspace.Path, c.RelativePath)), content);
+            try
+            {
+                var compilation = GetCompilation(proj.Id);
+                var highlight = new Highlighter(compilation).Highlight(Path.Combine(workspace.Path, content.RelativePath));
 
-            Send(Messages.Highlight(content.ContentId, highlight));
+                Send(Messages.Highlight(content.ContentId, highlight));
+            }
+            catch(Exception e)
+            {
+                Console.Error.WriteLine(e.ToString());
+            }
 
+        }
+
+        private void HostConfigurations(object sender, ConfigurationsEventArgs e)
+        {
+            var proj = _state.Workspace.Projects.SingleOrDefault(p => p.Id == e.ContextId);
+            if (proj == null)
+                return;
+
+            // TODO: Keep commands
+            UpdateNode<ProjectEntry>(proj.RelativePath, (p, c) => p.WithConfigurations(e.ProjectName, e.Configurations));
+            _compilations.AddOrUpdate(proj.Id, id => ProjectCompilation.Create(proj.Name, proj.Id), (id, old) => old.InvalidateConfiguration());
         }
 
         private void HostDiagnostics(object sender, DiagnosticsEventArgs e)
@@ -489,6 +733,7 @@ namespace Runt.Service
                 return;
 
             UpdateNode<ProjectEntry>(proj.RelativePath, (p, c) => p.WithSources(e));
+            _compilations.AddOrUpdate(proj.Id, id => ProjectCompilation.Create(proj.Name, proj.Id), (id, old) => old.InvalidateSources());
         }
 
         private void HostReferences(object sender, ReferencesEventArgs e)
@@ -498,6 +743,7 @@ namespace Runt.Service
                 return;
 
             UpdateNode<ProjectEntry>(proj.RelativePath, (p, c) => p.WithReferences(e, c));
+            _compilations.AddOrUpdate(proj.Id, id => ProjectCompilation.Create(proj.Name, proj.Id), (id, old) => old.InvalidateReferences());
         }
 
         private void HostConnected(object sender, EventArgs e)

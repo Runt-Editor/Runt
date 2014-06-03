@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 
-namespace Runt.Service.Highlighting
+namespace Runt.Service.SourceServices
 {
     public class TokenType
     {

@@ -1,49 +1,34 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Newtonsoft.Json.Linq;
-using Runt.Core;
-using Runt.Core.Model;
-using Runt.Core.Model.FileTree;
+using Runt.Service.CompilationModel;
 
-namespace Runt.Service.Highlighting
+namespace Runt.Service.SourceServices
 {
-    public class Highlighter
+    class Highlighter
     {
-        readonly ProjectEntry _proj;
+        readonly ProjectCompilation _compilation;
 
-        public Highlighter(ProjectEntry proj)
+        public Highlighter(ProjectCompilation compilation)
         {
-            _proj = proj;
+            _compilation = compilation;
         }
 
-        internal JObject Highlight(Dictionary<string, Content> contentLookup, Content content)
+        internal JObject Highlight(string path)
         {
-            var references = _proj.References.Select(GetReference).ToArray();
-            var sources = new Dictionary<string, SyntaxTree>();
-            SyntaxTree wanted = null;
-            foreach (var f in _proj.Sources)
-                sources.Add(f, Lookup(contentLookup, f, content, ref wanted));
-
-
-            if (wanted == null)
-                return null;
-
-            CSharpCompilation compilation = CSharpCompilation.Create(_proj.Name, references: references, syntaxTrees: sources.Values);
-            var semantic = compilation.GetSemanticModel(wanted);
-            var root = wanted.GetRoot();
-            return Highlight(root, semantic, content.ContentString);
+            SemanticModel model;
+            SyntaxNode root;
+            _compilation.GetRootForFile(path, out root, out model);
+            return Highlight(root, model);
         }
 
-        private JObject Highlight(SyntaxNode root, SemanticModel model, string text)
+        private JObject Highlight(SyntaxNode root, SemanticModel model)
         {
-            Func<int, int> lineOffset = glob => glob - text.LastIndexOfAny(new[] { '\r', '\n' }, 0, glob);
-            
             var visitor = new Visitor(model);
             visitor.Visit(root);
             var regions = visitor.Regions.OrderBy(r => r.Line).ThenBy(r => r.Start)
@@ -55,14 +40,18 @@ namespace Runt.Service.Highlighting
             }).Select(g =>
             {
                 var k = g.Key;
-                var c = string.Join(" ", g.Select(r => r.Style).Distinct());
+                var c = string.Join(" ", g.Where(r => !string.IsNullOrEmpty(r.Style)).Select(r => r.Style).Distinct());
+                var props = new JObject(g.Where(r => r.Props != null).SelectMany(r => r.Props.Properties()));
+                if (props.Count == 0)
+                    props = null;
 
                 return new Visitor.Region
                 {
                     Start = k.Start,
                     Line = k.Line,
                     End = k.End,
-                    Style = c
+                    Style = c,
+                    Props = props
                 };
             });
 
@@ -83,7 +72,7 @@ namespace Runt.Service.Highlighting
                     lregions = (JArray)((JObject)lineProp.Value).Property("ranges").Value;
                 }
 
-                var annotation = JObject.FromObject(new AnnotationRange(region.Start, region.End, new OrionStyle(styleClass: region.Style)));
+                var annotation = JObject.FromObject(new AnnotationRange(region.Start, region.End, new OrionStyle(styleClass: region.Style, attributes: region.Props)));
                 if (region.Style.Contains("error"))
                     AddError((JObject)lineProp.Value, annotation);
                 lregions.Add(annotation);
@@ -96,7 +85,7 @@ namespace Runt.Service.Highlighting
         {
             JArray errors;
             var prop = line.Property("errors");
-            if(prop == null)
+            if (prop == null)
             {
                 prop = new JProperty("errors", errors = new JArray());
                 line.Add(prop);
@@ -109,41 +98,6 @@ namespace Runt.Service.Highlighting
             errors.Add(error);
         }
 
-        private SyntaxTree Lookup(Dictionary<string, Content> contentLookup, string path, Content highlighting, ref SyntaxTree wanted)
-        {
-            Content content = null;
-            string text;
-            if (contentLookup.TryGetValue(path, out content))
-                text = content.ContentString;
-            else
-                text = File.ReadAllText(path);
-
-            if(content.RelativePath == highlighting.RelativePath)
-            {
-                text = highlighting.ContentString;
-                wanted = CSharpSyntaxTree.ParseText(text, path: path);
-                return wanted;
-            }
-
-            return CSharpSyntaxTree.ParseText(text, path: path);
-        }
-
-        private static MetadataReference GetReference(ReferencesEventArgs.Package package)
-        {
-            switch (package.Type)
-            {
-                case "Package":
-                case "Assembly":
-                    return new MetadataFileReference(package.Path);
-
-                case "Project":
-                    throw new NotImplementedException();
-
-                default:
-                    throw new Exception("Unknown package type");
-            }
-        }
-
         class Visitor : CSharpSyntaxWalker
         {
             public class Region
@@ -152,6 +106,7 @@ namespace Runt.Service.Highlighting
                 public int Start { get; set; }
                 public int End { get; set; }
                 public string Style { get; set; }
+                public JObject Props { get; set; }
             }
 
             readonly SemanticModel _model;
@@ -180,13 +135,13 @@ namespace Runt.Service.Highlighting
                 return diagnostics;
             }
 
-            void Mark(SyntaxToken token, string type)
+            void Mark(SyntaxToken token, string type = null, JObject props = null)
             {
                 var location = token.GetLocation().GetLineSpan();
                 var startLine = location.StartLinePosition.Line;
                 var endLine = location.EndLinePosition.Line;
 
-                for(var i = startLine; i <= endLine; i++)
+                for (var i = startLine; i <= endLine; i++)
                 {
                     var start = i == startLine ? location.StartLinePosition.Character : 0;
                     var end = i == endLine ? location.EndLinePosition.Character : int.MaxValue;
@@ -196,12 +151,13 @@ namespace Runt.Service.Highlighting
                         Line = i,
                         Start = start,
                         End = end,
-                        Style = type
+                        Style = type,
+                        Props = props
                     });
                 }
             }
 
-            void Mark(SyntaxTrivia trivia, string type)
+            void Mark(SyntaxTrivia trivia, string type, JObject props = null)
             {
                 var location = trivia.GetLocation().GetLineSpan();
                 var startLine = location.StartLinePosition.Line;
@@ -217,7 +173,8 @@ namespace Runt.Service.Highlighting
                         Line = i,
                         Start = start,
                         End = end,
-                        Style = type
+                        Style = type,
+                        Props = props
                     });
                 }
             }
@@ -225,11 +182,11 @@ namespace Runt.Service.Highlighting
             TokenType GetTokenType(SyntaxToken token)
             {
                 var declarationSymbol = _model.GetDeclaredSymbol(token.Parent);
-                if(declarationSymbol == null)
+                if (declarationSymbol == null)
                 {
                     // The token isnt part of a declaration node, so try to get symbol info.
                     var referenceSymbol = _model.GetSymbolInfo(token.Parent).Symbol;
-                    if(referenceSymbol == null)
+                    if (referenceSymbol == null)
                     {
                         // we couldnt find symbol information for the node, so we will look at all symbols in scope by name.
                         var namedSymbols = _model.LookupSymbols(token.SpanStart, null, token.ToString(), true);
@@ -246,56 +203,46 @@ namespace Runt.Service.Highlighting
                 return TokenType.Declaration(declarationSymbol);
             }
 
-            void VisitReference(SyntaxToken token, ISymbol symbol)
+            static string LocStr(Location loc)
             {
-                Mark(token, "reference");
-                if (symbol is IFieldSymbol)
-                {
-                    var isEnum = symbol.ContainingType != null && symbol.ContainingType.EnumUnderlyingType != null;
-                    if (isEnum)
-                        Mark(token, "enum-field");
-                    else
-                        Mark(token, "field");
-                }
-                else if (symbol is ILocalSymbol)
-                    Mark(token, "local-variable");
-                else if (symbol is IParameterSymbol)
-                    Mark(token, "parameter");
-                else if (symbol is IPropertySymbol)
-                    Mark(token, "property");
-                else if (symbol is INamedTypeSymbol)
-                    Mark(token, "named-type");
-                else if (symbol is IMethodSymbol)
-                    Mark(token, "method");
-                else if (symbol is INamespaceSymbol)
-                    Mark(token, "namespace");
-                else
-                    Mark(token, "identifier");
+                return string.Concat(loc.SourceSpan.Start, ",", loc.SourceSpan.End);
             }
 
-            void VisitDeclaration(SyntaxToken token, ISymbol symbol)
+            static Regex capital = new Regex("([a-z])([A-Z])", RegexOptions.Compiled);
+            void VisitSymbol(SyntaxToken token, ISymbol symbol)
             {
-                Mark(token, "declaration");
-                if (symbol is IFieldSymbol)
+                JObject data = new JObject(
+                    new JProperty("data-symbol", new JValue(LocStr(token.GetLocation())))
+                );
+
+                var parts = symbol.ToDisplayParts(new SymbolDisplayFormat());
+                var part = parts.SingleOrDefault(p => p.Symbol == symbol);
+                if (part.Symbol != null)
                 {
-                    var isEnum = symbol.ContainingType != null && symbol.ContainingType.EnumUnderlyingType != null;
-                    if (isEnum)
-                        Mark(token, "enum-field");
-                    else
-                        Mark(token, "field");
+                    string className = part.Kind.ToString();
+                    className = capital.Replace(className, "$1-$2").ToLower();
+
+                    Mark(token, className, data);
                 }
-                else if (symbol is ILocalSymbol)
-                    Mark(token, "local-variable");
-                else if (symbol is INamedTypeSymbol)
-                    Mark(token, "named-type");
-                else if (symbol is IPropertySymbol)
-                    Mark(token, "property");
-                else if (symbol is IMethodSymbol)
-                    Mark(token, "method");
-                else if (symbol is IParameterSymbol)
-                    Mark(token, "parameter");
-                else
-                    Mark(token, "identifier");
+
+                //SymbolDisplayPartKind kind = SymbolDisplayPartKind.Text;
+                //if (symbol is IAssemblySymbol)
+                //    kind = SymbolDisplayPartKind.AssemblyName;
+                //else if (symbol is IModuleSymbol)
+                //    kind = SymbolDisplayPartKind.ModuleName;
+                //else if (symbol is INamespaceSymbol)
+                //    kind = ((INamespaceSymbol)symbol).IsGlobalNamespace ? SymbolDisplayPartKind.Keyword : SymbolDisplayPartKind.NamespaceName;
+                //else if (symbol is ILocalSymbol)
+                //    kind = SymbolDisplayPartKind.LocalName;
+                //else if (symbol is IRangeVariableSymbol)
+                //    kind = SymbolDisplayPartKind.RangeVariableName;
+                //else if (symbol is ILabelSymbol)
+                //    kind = SymbolDisplayPartKind.LabelName;
+                //else if (symbol is IAliasSymbol)
+                //    kind = SymbolDisplayPartKind.AliasName;
+                //else if (symbol is INamedTypeSymbol)
+                //    kind = SymbolDisplayPartKind.ClassName;
+
             }
 
             void ClassifyIdentifierToken(SyntaxToken token)
@@ -304,11 +251,8 @@ namespace Runt.Service.Highlighting
                 switch (tokenType.Type)
                 {
                     case TokenType.Kind.Reference:
-                        VisitReference(token, tokenType.Symbol);
-                        break;
-
                     case TokenType.Kind.Declaration:
-                        VisitDeclaration(token, tokenType.Symbol);
+                        VisitSymbol(token, tokenType.Symbol);
                         break;
 
                     default:
@@ -322,7 +266,7 @@ namespace Runt.Service.Highlighting
                 VisitLeadingTrivia(token);
 
                 var diagnostics = Diagnostics(token);
-                if(diagnostics != null)
+                if (diagnostics != null)
                 {
                     if (diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error))
                         Mark(token, "error");
@@ -331,10 +275,15 @@ namespace Runt.Service.Highlighting
                 }
 
                 if (token.IsKeyword() || token.IsContextualKeyword())
+                {
                     Mark(token, "keyword");
+                    var type = GetTokenType(token);
+                    if (type.Type != TokenType.Kind.Unknown)
+                        ClassifyIdentifierToken(token);
+                }
 
                 var kind = token.CSharpContextualKind();
-                switch(kind)
+                switch (kind)
                 {
                     case SyntaxKind.IdentifierToken:
                         ClassifyIdentifierToken(token); break;
@@ -358,7 +307,7 @@ namespace Runt.Service.Highlighting
                     Visit(trivia.GetStructure());
                 else
                 {
-                    switch(trivia.CSharpKind())
+                    switch (trivia.CSharpKind())
                     {
                         case SyntaxKind.MultiLineCommentTrivia:
                         case SyntaxKind.SingleLineCommentTrivia:

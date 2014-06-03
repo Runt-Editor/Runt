@@ -23,7 +23,7 @@ namespace Runt.Service
             return new JObject(
                 new JProperty("type", new JValue(type)),
                 new JProperty("data", new JRaw(content))
-            ).ToString();
+            ).ToString(Formatting.None);
         }
 
         internal static string Error(Exception e)
@@ -45,9 +45,18 @@ namespace Runt.Service
             return Message("state", diff.ToString(Formatting.None));
         }
 
-        public static string Content(Content content)
+        public static string Callback(int callback, Content content)
         {
-            return Message("content", JsonConvert.SerializeObject(content));
+            return Callback(callback, JObject.FromObject(content));
+        }
+
+        public static string Callback(int callback, JToken value)
+        {
+            return new JObject(
+                new JProperty("type", new JValue("callback")),
+                new JProperty("id", new JValue(callback)),
+                new JProperty("data", value)
+            ).ToString(Formatting.None);
         }
 
         internal static string Highlight(string contentId, JObject highlight)

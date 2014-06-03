@@ -14,7 +14,8 @@ namespace Runt.Core
             : base(contextId)
         {
             _root = message.RootDependency;
-            _dependencies = message.Dependencies.Select(kvp => new KeyValuePair<string, Package>(kvp.Key, new Package(kvp.Value))).ToImmutableDictionary();
+            _dependencies = message.Dependencies.Select(kvp => new KeyValuePair<string, Package>(
+                kvp.Key, new Package(message.LongFrameworkName, kvp.Value))).ToImmutableDictionary();
         }
 
         public string Root
@@ -30,10 +31,17 @@ namespace Runt.Core
         public class Package
         {
             readonly ReferenceDescription _ref;
+            readonly string _frameworkName;
 
-            public Package(ReferenceDescription desc)
+            public Package(string frameworkName, ReferenceDescription desc)
             {
+                _frameworkName = frameworkName;
                 _ref = desc;
+            }
+
+            public string Framework
+            {
+                get { return _frameworkName; }
             }
 
             public string Name

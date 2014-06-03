@@ -63,7 +63,10 @@
     <Compile Include="Incomming\ReferencesMessage.cs" />
     <Compile Include="Incomming\SourcesMessage.cs" />
     <Compile Include="IOExtensions.cs" />
+    <Compile Include="JsonSerializerExtensions.cs" />
+    <Compile Include="Model\Content.cs" />
     <Compile Include="Model\DiagnosticMessage.cs" />
+    <Compile Include="Model\FileContent.cs" />
     <Compile Include="Model\FileTree\DirectoryEntry.cs" />
     <Compile Include="Model\EditorState.cs" />
     <Compile Include="IClientConnection.cs" />
@@ -75,6 +78,7 @@
     <Compile Include="Model\FileTree\PackagesEntry.cs" />
     <Compile Include="Model\FileTree\ProjectEntry.cs" />
     <Compile Include="Model\FileTree\ReferenceEntry.cs" />
+    <Compile Include="Model\Tab.cs" />
     <Compile Include="Model\Workspace.cs" />
     <Compile Include="Outgoing\ChangeTargetFrameworkMessage.cs" />
     <Compile Include="Outgoing\InitializeMessage.cs" />

@@ -302,6 +302,7 @@ define(['require', 'exports', 'react', '../app', '../editor', 'orion/editor/edit
       var e = editor.create(node, {
         contentType: 'text/csharp'
       });
+      e.uninstall();
       // var e = edit({parent: node});
       this.setState({
         editor: e
@@ -320,11 +321,19 @@ define(['require', 'exports', 'react', '../app', '../editor', 'orion/editor/edit
         if(!this.props.content) {
           this.state.editor.install();
         }
-        // TODO: Ensure saved
         var editor = this.state.editor;
         var content = nextProps.content;
-        editor.setInput(content.name, null, content.content, true /* saved */);
-        editor.setText(content.content);
+        app.$updating = true;
+        var text = editor.getText();
+
+        editor.uninstall();
+        app.getContent(this.props.content, text, content, function(content) {
+          editor.install();
+          editor.setText('');
+          app.$updating = false;
+          editor.setInput(content.name, null, content.content, true /* saved */);
+          editor.setText(content.content);
+        });
       } else if(!nextProps.content && this.props.content) {
         this.state.editor.uninstall();
       }
@@ -337,8 +346,30 @@ define(['require', 'exports', 'react', '../app', '../editor', 'orion/editor/edit
 
     render: function() {
       return (
-        <div className="content-area editor" />
+        <div className="content-area editor" onMouseOver={this.mouseEnter} onMouseOut={this.mouseLeave} />
       );
+    },
+
+    mouseEnter: function(e) {
+      var _this = this;
+      var target = this._target = e.target;
+      this._timer = setTimeout(function() {
+        if(target === _this._target) {
+          var symbolLoc = target.getAttribute('data-symbol');
+
+          if(symbolLoc) {
+            app.getInfo(symbolLoc, function(info) {
+              if(info) {
+                console.log(info);
+              }
+            });
+          }
+        }
+      }, 350);
+    },
+
+    mouseLeave: function(e) {
+      clearTimeout(this._timer);
     }
   });
 
@@ -419,13 +450,13 @@ define(['require', 'exports', 'react', '../app', '../editor', 'orion/editor/edit
   var Main = React.createClass({
     render: function() {
       var extra = null;
-      var content = null;
+      var contentId = null;
       if(this.state.tabs) {
         var tabs = this.state.tabs;
         for(var i = 0, l = tabs.length; i < l; i++) {
           if(tabs[i].active)
           {
-            content = this.state._cache.content[tabs[i].cid];
+            contentId = tabs[i].cid;
             break;
           }
         }
@@ -443,7 +474,7 @@ define(['require', 'exports', 'react', '../app', '../editor', 'orion/editor/edit
       return this.transferPropsTo(
         <div className="root">
           <Header menu={this.state._menu} />
-          <Content workspace={this.state.workspace} tabs={this.state.tabs} content={content} />
+          <Content workspace={this.state.workspace} tabs={this.state.tabs} content={contentId} />
           {extra}
         </div>
       );

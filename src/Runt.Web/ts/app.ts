@@ -4,6 +4,9 @@ import conn = require('./signalr/connection');
 import React = require('react');
 import view = require('./view/main');
 
+export var $updating = false;
+var callbacks = {};
+
 var connection = new conn.Connection(window.location.protocol + '//' + window.location.host + '/io');
 connection.start();
 connection.received.on(message => {
@@ -31,8 +34,11 @@ function handle(msg: any): void {
             updateState(msg.data);
             break;
 
-        case 'content':
-            updateContent(msg.data);
+        case 'callback':
+            var id = msg.id;
+            var cb = callbacks[id];
+            delete callbacks[id];
+            cb(msg.data);
             break;
 
         case 'highlight':
@@ -113,33 +119,14 @@ var component = React.renderComponent(view.Main({
 function updateState(diff: any): void {
     state = merge(state, diff);
 
-    if (state.tabs) {
-        var tabs = state.tabs;
-        for (var i = 0, l = tabs.length; i < l; i++) {
-            var tab = tabs[i];
-            if (tab.active) {
-                var cid = tab.cid;
-                if (state._cache.content[cid] === undefined) {
-                    state._cache.content[cid] = null;
-                    invoke('content::load', cid);
-                    break;
-                }
-            }
-        }
-    }
-
     component.setState(state);
 }
 
 function updateContent(content: any): void {
     var cid = content.cid;
-    var contentCacheUpdate = {};
-    contentCacheUpdate[cid] = content;
-    updateState({
-        _cache: {
-            content: contentCacheUpdate
-        }
-    });
+    var cb = contentCallbacks[cid];
+    delete contentCallbacks[cid];
+    cb(content);
 }
 
 var _highlight;
@@ -216,4 +203,17 @@ export function updateCode(update: any): void {
 
 export function routeHighlight(fn) {
     _highlight = fn;
+}
+
+var gid = 0;
+export function getContent(oldCid: string, oldText: string, newCid: string, callback: (c: any) => void): void {
+    var id = gid++;
+    callbacks[id] = callback;
+    invoke('content::swap', id, oldCid, oldText, newCid);
+}
+
+export function getInfo(symbolId: string, callback: (c: any) => void): void {
+    var id = gid++;
+    callbacks[id] = callback;
+    invoke('symbol::get-info', id, symbolId);
 }

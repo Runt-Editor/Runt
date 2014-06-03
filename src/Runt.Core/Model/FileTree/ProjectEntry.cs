@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Runt.DesignTimeHost.Incomming;
 
 namespace Runt.Core.Model.FileTree
 {
@@ -18,10 +19,12 @@ namespace Runt.Core.Model.FileTree
         readonly ImmutableList<DiagnosticMessage> _diagnostics;
         readonly ImmutableList<string> _sources;
         readonly ImmutableDictionary<string, string> _generatedSources;
+        readonly IImmutableList<ConfigurationData> _configurations;
 
         protected ProjectEntry(string rel, bool isOpen, DirectoryInfo dir, ImmutableList<DirectoryEntry> directories,
             ImmutableList<Entry> files, ReferencesEntry references, ImmutableList<DiagnosticMessage> diagnostics, int id,
-            ImmutableList<string> sources, ImmutableDictionary<string, string> generatedSources)
+            ImmutableList<string> sources, ImmutableDictionary<string, string> generatedSources,
+            IImmutableList<ConfigurationData> configurations)
             : base(rel, isOpen, dir, directories, files)
         {
             _id = id;
@@ -30,6 +33,7 @@ namespace Runt.Core.Model.FileTree
             _diagnostics = diagnostics;
             _sources = sources;
             _generatedSources = generatedSources;
+            _configurations = configurations;
         }
 
         public static new Tuple<DirectoryEntry, ImmutableList<ProjectEntry>> Create(DirectoryInfo dir, string relativePath)
@@ -55,7 +59,7 @@ namespace Runt.Core.Model.FileTree
 
             var project = new ProjectEntry(relativePath, false, dir, dirs.ToImmutable(), files.ToImmutableList(),
                 new ReferencesEntry(false, relativePath + ":references", ImmutableList.Create<ReferenceEntry>(), null),
-                ImmutableList.Create<DiagnosticMessage>(), -1, ImmutableList.Create<string>(), ImmutableDictionary.Create<string, string>());
+                ImmutableList.Create<DiagnosticMessage>(), -1, ImmutableList.Create<string>(), ImmutableDictionary.Create<string, string>(), null);
             return new Tuple<DirectoryEntry, ImmutableList<ProjectEntry>>(
                 project,
                 ImmutableList.Create(project));
@@ -64,7 +68,7 @@ namespace Runt.Core.Model.FileTree
         public ProjectEntry WithId(int id, JObject change)
         {
             Utils.RegisterChange(change, () => Id, id, null);
-            return new ProjectEntry(RelativePath, IsOpen, _dir, _directories, _files, _references, _diagnostics, id, _sources, _generatedSources);
+            return new ProjectEntry(RelativePath, IsOpen, _dir, _directories, _files, _references, _diagnostics, id, _sources, _generatedSources, _configurations);
         }
 
         public override Entry WithChild(int index, Entry child, JObject changes, JObject subChange)
@@ -78,13 +82,13 @@ namespace Runt.Core.Model.FileTree
             }
 
             var lists = ChangeIndex(index - 1, child, changes, subChange);
-            return new ProjectEntry(RelativePath, IsOpen, _dir, lists.Item1, lists.Item2, _references, _diagnostics, _id, _sources, _generatedSources);
+            return new ProjectEntry(RelativePath, IsOpen, _dir, lists.Item1, lists.Item2, _references, _diagnostics, _id, _sources, _generatedSources, _configurations);
         }
 
         public override Entry AsOpen(bool open, JObject c)
         {
             RegisterOpenChange(open, c);
-            return new ProjectEntry(RelativePath, open, _dir, _directories, _files, _references, _diagnostics, _id, _sources, _generatedSources);
+            return new ProjectEntry(RelativePath, open, _dir, _directories, _files, _references, _diagnostics, _id, _sources, _generatedSources, _configurations);
         }
 
         private ProjectEntry WithReferences(ReferencesEntry newRef, JObject changes, JObject subChanges)
@@ -95,7 +99,7 @@ namespace Runt.Core.Model.FileTree
             // Note: I use null here because I don't want to create the lists.
             // given that indexChange will never be null, this is safe.
             Utils.RegisterChange(changes, () => Children, null, indexChange);
-            return new ProjectEntry(RelativePath, IsOpen, _dir, _directories, _files, newRef, _diagnostics, _id, _sources, _generatedSources);
+            return new ProjectEntry(RelativePath, IsOpen, _dir, _directories, _files, newRef, _diagnostics, _id, _sources, _generatedSources, _configurations);
         }
 
         public ProjectEntry WithReferences(ReferencesEventArgs e, JObject c)
@@ -121,13 +125,20 @@ namespace Runt.Core.Model.FileTree
                 .Select(DiagnosticMessage.Create).ToImmutableList();
 
             return new ProjectEntry(RelativePath, IsOpen, _dir, _directories, _files, _references,
-                diag, _id, _sources, _generatedSources);
+                diag, _id, _sources, _generatedSources, _configurations);
+        }
+
+        public ProjectEntry WithConfigurations(string name, IImmutableList<ConfigurationData> configurations)
+        {
+            // TODO: Use name
+            return new ProjectEntry(RelativePath, IsOpen, _dir, _directories, _files, _references,
+                _diagnostics, _id, _sources, _generatedSources, configurations);
         }
 
         public ProjectEntry WithSources(SourcesEventArgs e)
         {
             return new ProjectEntry(RelativePath, IsOpen, _dir, _directories, _files, _references, _diagnostics, _id,
-                e.Files, e.GeneratedFiles);
+                e.Files, e.GeneratedFiles, _configurations);
         }
 
         [JsonIgnore]
@@ -170,6 +181,12 @@ namespace Runt.Core.Model.FileTree
         public ImmutableList<DiagnosticMessage> Diagnostics
         {
             get { return _diagnostics; }
+        }
+
+        [JsonIgnore]
+        public IImmutableList<ConfigurationData> Configurations
+        {
+            get { return _configurations; }
         }
 
         public override string Type

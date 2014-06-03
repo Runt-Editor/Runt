@@ -52,13 +52,15 @@ define([
     var start = e.start;
     var removed = e.removedCharCount;
     var added = e.addedCharCount;
-    app.updateCode({
-      text: text,
-      start: start,
-      removed: removed,
-      added: added,
-      update: update++
-    });
+    if(!app.$updating) {
+      app.updateCode({
+        text: text,
+        start: start,
+        removed: removed,
+        added: added,
+        update: update++
+      });
+    }
   }
 
   function unset(e) {
