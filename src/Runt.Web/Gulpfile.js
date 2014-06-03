@@ -97,4 +97,4 @@ gulp.task('watch', function() {
   });
 });
 
-gulp.task('default', ['build, css-dev']);
+gulp.task('default', ['build', 'css-dev']);
