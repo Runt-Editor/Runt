@@ -9,7 +9,7 @@ var gulp = require('gulp'),
     filter = require('gulp-filter');
 
 gulp.task('build-ts', function() {
-  return gulp.src('ts/**/*.js')
+  return gulp.src('ts/**/*.ts')
     .pipe(tcs({
       sourcemaps: true,
       module: 'amd'
@@ -21,6 +21,11 @@ gulp.task('build-view', function() {
   return gulp.src('view/**/*.jsx')
     .pipe(react())
     .pipe(gulp.dest('js/view'));
+});
+
+gulp.task('build-scripts', function() {
+  return gulp.src('script/**/*.js')
+    .pipe(gulp.dest('js'));
 });
 
 gulp.task('rjs', ['build-ts', 'build-view'], function() {
