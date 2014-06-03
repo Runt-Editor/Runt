@@ -312,6 +312,7 @@ namespace Runt.Service.SourceServices
                     case SyntaxKind.SingleLineCommentTrivia:
                     case SyntaxKind.SingleLineDocumentationCommentTrivia:
                     case SyntaxKind.MultiLineDocumentationCommentTrivia:
+                    case SyntaxKind.DocumentationCommentExteriorTrivia:
                         Mark(trivia, "comment"); break;
 
                     case SyntaxKind.EndOfLineTrivia:

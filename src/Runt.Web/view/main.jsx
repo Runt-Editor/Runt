@@ -360,6 +360,15 @@ define(['require', 'exports', 'react', '../app', '../editor', 'orion/editor/edit
           if(symbolLoc) {
             app.getInfo(symbolLoc, function(info) {
               if(info) {
+                var bodyRect = document.body.getBoundingClientRect(),
+                    targRect = target.getBoundingClientRect(),
+                    top = targRect.top - bodyRect.top,
+                    left = targRect.left - bodyRect.left,
+                    bottom = bodyRect.height - top + targRect.height;
+
+                info.top = top;
+                info.left = left;
+                info.bottom = bottom;
                 app.popup(info);
               }
             });
@@ -457,7 +466,7 @@ define(['require', 'exports', 'react', '../app', '../editor', 'orion/editor/edit
       });
 
       return (
-        <div className="code-popup" style={{position: 'absolute', left: '200px', top: '0'}}>
+        <div className="code-popup" style={{left: (this.props.info.left - 10) + 'px', bottom: (this.props.info.bottom) + 'px'}}>
           <span className="name">{nameParts}</span>
           <span className="summary">{this.props.info.summary}</span>
         </div>
