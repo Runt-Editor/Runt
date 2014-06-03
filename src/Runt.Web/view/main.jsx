@@ -360,7 +360,7 @@ define(['require', 'exports', 'react', '../app', '../editor', 'orion/editor/edit
           if(symbolLoc) {
             app.getInfo(symbolLoc, function(info) {
               if(info) {
-                console.log(info);
+                app.popup(info);
               }
             });
           }
@@ -370,6 +370,7 @@ define(['require', 'exports', 'react', '../app', '../editor', 'orion/editor/edit
 
     mouseLeave: function(e) {
       clearTimeout(this._timer);
+      app.popup(null);
     }
   });
 
@@ -447,9 +448,26 @@ define(['require', 'exports', 'react', '../app', '../editor', 'orion/editor/edit
       }
   });
 
+  var Popup = React.createClass({
+    render: function() {
+      var nameParts = this.props.info.name.map(function(n) {
+        return (
+          <span className={n.kind}>{n.val}</span>
+        );
+      });
+
+      return (
+        <div className="code-popup" style={{position: 'absolute', left: '200px', top: '0'}}>
+          <span className="name">{nameParts}</span>
+          <span className="summary">{this.props.info.summary}</span>
+        </div>
+      );
+    }
+  });
+
   var Main = React.createClass({
     render: function() {
-      var extra = null;
+      var extra = [];
       var contentId = null;
       if(this.state.tabs) {
         var tabs = this.state.tabs;
@@ -465,10 +483,16 @@ define(['require', 'exports', 'react', '../app', '../editor', 'orion/editor/edit
       if(this.state.dialog) {
         var dialog = Dialogs[this.state.dialog.name];
         if(dialog) {
-          extra = (
+          extra.push(
             Dialog(this.state.dialog, dialog(this.state.dialog))
           );
         }
+      }
+
+      if(this.state._popup) {
+        extra.push(
+          <Popup info={this.state._popup} />
+        );
       }
 
       return this.transferPropsTo(

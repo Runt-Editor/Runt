@@ -217,3 +217,9 @@ export function getInfo(symbolId: string, callback: (c: any) => void): void {
     callbacks[id] = callback;
     invoke('symbol::get-info', id, symbolId);
 }
+
+export function popup(info: any): void {
+    component.setState({
+        _popup: info
+    });
+}

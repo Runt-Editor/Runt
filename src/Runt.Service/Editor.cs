@@ -205,7 +205,8 @@ namespace Runt.Service
                 if (config == null)
                     config = CSharpParseOptions.Default
                         .WithLanguageVersion((LanguageVersion)configData.CompilationSettings.LanguageVersion)
-                        .WithPreprocessorSymbols(configData.CompilationSettings.Defines);
+                        .WithPreprocessorSymbols(configData.CompilationSettings.Defines)
+                        .WithDocumentationMode(DocumentationMode.Parse);
 
                 if (sources == null)
                     sources = new List<SyntaxTree>();

@@ -68,87 +68,89 @@ define([
     _textView.removeEventListener('Destroy', unset);
   }
 
+  function create(node, options)
+  {
+    var textViewFactory = function() {
+      return new mTextView.TextView({
+        parent: node,
+        model: new mTextModel.TextModel(''),
+        tabSize: 4,
+        readonly: false,
+        fullSelection: true,
+        tabMode: true,
+        expandTab: true,
+        singleMode: false,
+        themeClass: undefined,
+        theme: undefined,
+        wrapMode: false,
+        wrapable: false
+      });
+    };
+
+    var contentAssist, contentAssistFactory;
+    contentAssistFactory = {
+      createContentAssistMode: function(editor) {
+        contentAssist = new mContentAssist.ContentAssist(editor.getTextView());
+        var contentAssistWidget = new mContentAssist.ContentAssistWidget(contentAssist);
+        var result = new mContentAssist.ContentAssistMode(contentAssist, contentAssistWidget);
+        contentAssist.setMode(result);
+        return result;
+      }
+    };
+
+    var syntaxHighlighter = {
+      styler: null,
+
+      highlight: function(editor) {
+        if(this.styler && this.styler.destroy) {
+          this.styler.destroy();
+        }
+        this.styler = null;
+
+        var textView = editor.getTextView();
+        var annotationModel = editor.getAnnotationModel();
+        this.styler = new AsyncStyler(textView, serviceRegistry, annotationModel);
+        _textView = textView;
+        textView.addEventListener('ModelChanged', syntaxHighlight);
+        textView.addEventListener('Destroy', unset);
+      }
+    };
+
+    var editor = new mEditor.Editor({
+      textViewFactory: textViewFactory,
+      undoStackFactory: new mEditorFeatures.UndoFactory(),
+      annotationFactory: new mEditorFeatures.AnnotationFactory(),
+      lineNumberRulerFactory: new mEditorFeatures.LineNumberRulerFactory(),
+      foldingRulerFactory: new mEditorFeatures.FoldingRulerFactory(),
+      textDNDFactory: new mEditorFeatures.TextDNDFactory(),
+      contentAssistFactory: contentAssistFactory,
+      keyBindingFactory: new mEditorFeatures.KeyBindingsFactory(), 
+      statusReporter: options.statusReporter,
+      domNode: node
+    });
+
+    editor.addEventListener('TextViewInstalled', function() {
+      var sourceCodeActions = editor.getSourceCodeActions();
+      sourceCodeActions.setAutoPairParentheses(true);
+      sourceCodeActions.setAutoPairBraces(true);
+      sourceCodeActions.setAutoPairSquareBrackets(true);
+      sourceCodeActions.setAutoPairAngleBrackets(true);
+      sourceCodeActions.setAutoPairQuotations(true);
+      sourceCodeActions.setAutoCompleteComments(true);
+      sourceCodeActions.setSmartIndentation(true);
+
+      syntaxHighlighter.highlight(editor);
+    });
+
+    editor.setLineNumberRulerVisible(true);
+    editor.setAnnotationRulerVisible(true);
+    editor.setOverviewRulerVisible(true);
+    editor.setFoldingRulerVisible(true);
+
+    return editor;
+  }
 
   return {
-    create: function(node, options) {
-      var textViewFactory = function() {
-        return new mTextView.TextView({
-          parent: node,
-          model: new mTextModel.TextModel(''),
-          tabSize: 4,
-          readonly: false,
-          fullSelection: true,
-          tabMode: true,
-          expandTab: true,
-          singleMode: false,
-          themeClass: undefined,
-          theme: undefined,
-          wrapMode: false,
-          wrapable: false
-        });
-      };
-
-      var contentAssist, contentAssistFactory;
-      contentAssistFactory = {
-        createContentAssistMode: function(editor) {
-          contentAssist = new mContentAssist.ContentAssist(editor.getTextView());
-          var contentAssistWidget = new mContentAssist.ContentAssistWidget(contentAssist);
-          var result = new mContentAssist.ContentAssistMode(contentAssist, contentAssistWidget);
-          contentAssist.setMode(result);
-          return result;
-        }
-      };
-
-      var syntaxHighlighter = {
-        styler: null,
-
-        highlight: function(editor) {
-          if(this.styler && this.styler.destroy) {
-            this.styler.destroy();
-          }
-          this.styler = null;
-
-          var textView = editor.getTextView();
-          var annotationModel = editor.getAnnotationModel();
-          this.styler = new AsyncStyler(textView, serviceRegistry, annotationModel);
-          _textView = textView;
-          textView.addEventListener('ModelChanged', syntaxHighlight);
-          textView.addEventListener('Destroy', unset);
-        }
-      };
-
-      var editor = new mEditor.Editor({
-        textViewFactory: textViewFactory,
-        undoStackFactory: new mEditorFeatures.UndoFactory(),
-        annotationFactory: new mEditorFeatures.AnnotationFactory(),
-        lineNumberRulerFactory: new mEditorFeatures.LineNumberRulerFactory(),
-        foldingRulerFactory: new mEditorFeatures.FoldingRulerFactory(),
-        textDNDFactory: new mEditorFeatures.TextDNDFactory(),
-        contentAssistFactory: contentAssistFactory,
-        keyBindingFactory: new mEditorFeatures.KeyBindingsFactory(), 
-        statusReporter: options.statusReporter,
-        domNode: node
-      });
-
-      editor.addEventListener('TextViewInstalled', function() {
-        var sourceCodeActions = editor.getSourceCodeActions();
-        sourceCodeActions.setAutoPairParentheses(true);
-        sourceCodeActions.setAutoPairBraces(true);
-        sourceCodeActions.setAutoPairSquareBrackets(true);
-        sourceCodeActions.setAutoPairAngleBrackets(true);
-        sourceCodeActions.setAutoPairQuotations(true);
-        sourceCodeActions.setAutoCompleteComments(true);
-        sourceCodeActions.setSmartIndentation(true);
-
-        syntaxHighlighter.highlight(editor);
-      });
-
-      editor.setLineNumberRulerVisible(true);
-      editor.setAnnotationRulerVisible(true);
-      editor.setOverviewRulerVisible(true);
-      editor.setFoldingRulerVisible(true);
-
-      return editor;
-    }
+    create: create
   };
 });

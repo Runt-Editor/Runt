@@ -46,7 +46,7 @@ namespace Microsoft.CodeAnalysis
                         {
                             if (e.HasAttribute("name"))
                             {
-                                this.docComments[e.GetAttribute("name")] = e.InnerXml;
+                                this.docComments[e.GetAttribute("name")] = e.OuterXml;
                             }
                         }
                     }

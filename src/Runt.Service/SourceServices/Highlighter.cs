@@ -305,27 +305,27 @@ namespace Runt.Service.SourceServices
             {
                 if (trivia.HasStructure)
                     Visit(trivia.GetStructure());
-                else
+
+                switch (trivia.CSharpKind())
                 {
-                    switch (trivia.CSharpKind())
-                    {
-                        case SyntaxKind.MultiLineCommentTrivia:
-                        case SyntaxKind.SingleLineCommentTrivia:
-                            Mark(trivia, "comment"); break;
+                    case SyntaxKind.MultiLineCommentTrivia:
+                    case SyntaxKind.SingleLineCommentTrivia:
+                    case SyntaxKind.SingleLineDocumentationCommentTrivia:
+                    case SyntaxKind.MultiLineDocumentationCommentTrivia:
+                        Mark(trivia, "comment"); break;
 
-                        case SyntaxKind.EndOfLineTrivia:
-                        case SyntaxKind.WhitespaceTrivia:
-                            Mark(trivia, "whitespace"); break;
+                    case SyntaxKind.EndOfLineTrivia:
+                    case SyntaxKind.WhitespaceTrivia:
+                        Mark(trivia, "whitespace"); break;
 
-                        case SyntaxKind.RegionDirectiveTrivia:
-                            Mark(trivia, "begin-region"); break;
+                    case SyntaxKind.RegionDirectiveTrivia:
+                        Mark(trivia, "begin-region"); break;
 
-                        case SyntaxKind.EndRegionDirectiveTrivia:
-                            Mark(trivia, "end-region"); break;
+                    case SyntaxKind.EndRegionDirectiveTrivia:
+                        Mark(trivia, "end-region"); break;
 
-                        case SyntaxKind.DisabledTextTrivia:
-                            Mark(trivia, "disabled-text"); break;
-                    }
+                    case SyntaxKind.DisabledTextTrivia:
+                        Mark(trivia, "disabled-text"); break;
                 }
             }
 

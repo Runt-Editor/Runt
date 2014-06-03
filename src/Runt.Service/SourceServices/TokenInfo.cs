@@ -84,7 +84,8 @@ namespace Runt.Service.SourceServices
             {
                 try
                 {
-                    XDocument doc = XDocument.Parse("<doc>" + xml + "</doc>");
+                    XDocument doc = XDocument.Parse(xml);
+
                     var summary = doc.Root.Element("summary");
                     if (summary != null)
                         info = summary.Value;
