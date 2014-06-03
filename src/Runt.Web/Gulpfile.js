@@ -56,6 +56,12 @@ gulp.task('css', function() {
     .pipe(gulp.dest('dist'));
 });
 
+gulp.task('css-dev', function() {
+  return gulp.src('style/app.stylus')
+    .pipe(stylus())
+    .pipe(gulp.dest('css'));
+});
+
 gulp.task('build', ['rjs', 'css', 'rconf']);
 
 gulp.task('watch', function() {
@@ -91,4 +97,4 @@ gulp.task('watch', function() {
   });
 });
 
-gulp.task('default', ['build']);
+gulp.task('default', ['build, css-dev']);
