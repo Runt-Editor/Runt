@@ -28,7 +28,7 @@ gulp.task('build-scripts', function() {
     .pipe(gulp.dest('js'));
 });
 
-gulp.task('rjs', ['build-ts', 'build-view'], function() {
+gulp.task('rjs', ['build-ts', 'build-view', 'build-scripts'], function() {
   rjs({
     baseUrl: './js/',
     name: 'app',
